@@ -1,0 +1,81 @@
+Use 8051 as Coprocessor
+=======================
+
+```
++-----------+               +------+
+|   Main    |  Serial Line  | 8051 |
+| Processor |<------------->|      |
++-----------+               +------+
+```
+
+
+Protocol
+--------
+
+```
++--------+----------+------------------+-----------------+--------------+
+| Length | Identity | Message Checksum | Header Checksum | Message Body |
++--------+----------+------------------+-----------------+--------------+
+```
+
+### `Length` Field
+
+* 2 byte
+* little endian
+* length of `Message Body`
+
+### `Identity` Field
+
+* 1 byte
+* valid values
+    - 0x70('p'): ping request, no `Message Body`
+    - 0x61('a'): ping ack, no `Message Body`
+    - 0x71('q'): control request
+    - 0x72('r'): control response
+* all other value should be ignored
+
+### `Message Checksum` Field
+
+* 1 byte
+* checksum of `Message Body` field
+* if `Message Body` is absent, this field should be 0xff
+
+### `Header Checksum` Field
+
+* 1 byte
+* checksum of `Length`, `Identity` and `Message Checksum` field
+
+### Checksum Algorithm
+
+```
+function checksum(bytes[])
+	sum = 0
+	for byte in bytes
+		sum = sum + byte
+	return sum & 0xff
+```
+
+### XOR Encryption
+
+Before sending to `Serial Line`,
+every byte should be XOR with `0xd8`.
+
+After receiving from `Serial Line`,
+every byte should be XOR with `0xd8` before futher processing.
+
+### Control Message
+
+```
++-----------+--------------+----------------+
+| Device ID | Control Code | Control Detail |
++-----------+--------------+----------------+
+```
+
+* `Device ID`: 1 byte
+* `Control Code`: 1 byte
+* `Control Detail`: depends on specific device
+
+After the *Control Action* is finished,
+a `Control Message` without `Control Detail` field
+should be send back as a *control response*.
+
