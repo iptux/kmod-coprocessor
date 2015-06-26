@@ -27,7 +27,7 @@ Draw a region of OLED
 * `X`: 1 byte, *x* of region
 * `W`: 1 byte, width of region
 * `Y&I&H`: 1 byte
-    - `Y`: lowest 3 bits, *y* if region
+    - `Y`: lowest 3 bits, *y* of region
     - `I`: 4th bit, inverse the show
     - `H`: highest 4 bits, *height* of region
 * `DATA`: *data* to fill in the region
