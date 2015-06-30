@@ -75,6 +75,8 @@ every byte should be XOR with `0xd8` before futher processing.
 * `Control Code`: 1 byte
 * `Control Detail`: depends on specific device
 
+`Device ID` value `0xf0 ~ 0xff` is reserved for special usage.
+
 ### Control Response
 
 After the *Control Action* is finished,
@@ -90,4 +92,19 @@ should be send back as a *control response*.
 * `Device ID`: 1 byte, same as `Device ID` in `Control Request`
 * `Control Code`: 1 byte, same as `Control Code` in `Control Request`
 * `Response Detail`: depends on specific device
+
+### Control Error Reponse
+
+If an error occured, a *Control Error Response* should be send.
+
+```
++----------+------------+
+| Error ID | Error Code |
++----------+------------+
+```
+
+* `Error ID`: 1 byte, 0xf0
+* `Error Code`: 1 byte, `0xf0 ~ 0xff` is reserved
+    - 0xf0: invalid `Device ID`
+    - 0xf1: invalid `Control Code`
 
