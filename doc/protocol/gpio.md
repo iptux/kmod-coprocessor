@@ -43,10 +43,10 @@ GPIO Control via coprocessor
 
 ### GPIO Value Change Report
 
-Send from coprocessor to main processor,
-report a value change event on a GPIO Port.
+Send from coprocessor to primary processor,
+report a value change event of a GPIO.
 
-`Control Code`: 0x75('u') for change from low to high
+`Control Code`: 0x75('u') for change from low to high,
   0x64('d') for change from high to low
 
 ```

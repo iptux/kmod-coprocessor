@@ -3,7 +3,7 @@ Use 8051 as Coprocessor
 
 ```
 +-----------+               +------+
-|   Main    |  Serial Line  | 8051 |
+|  Primary  |  Serial Line  | 8051 |
 | Processor |<------------->|      |
 +-----------+               +------+
 ```
