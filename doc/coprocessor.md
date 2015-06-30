@@ -63,7 +63,7 @@ every byte should be XOR with `0xd8`.
 After receiving from `Serial Line`,
 every byte should be XOR with `0xd8` before futher processing.
 
-### Control Message
+### Control Request
 
 ```
 +-----------+--------------+----------------+
@@ -75,7 +75,19 @@ every byte should be XOR with `0xd8` before futher processing.
 * `Control Code`: 1 byte
 * `Control Detail`: depends on specific device
 
+### Control Response
+
 After the *Control Action* is finished,
-a `Control Message` without `Control Detail` field
+a `Control Message` with `Control Detail` field replaced by `Response Detail` field
 should be send back as a *control response*.
+
+```
++-----------+--------------+-----------------+
+| Device ID | Control Code | Response Detail |
++-----------+--------------+-----------------+
+```
+
+* `Device ID`: 1 byte, same as `Device ID` in `Control Request`
+* `Control Code`: 1 byte, same as `Control Code` in `Control Request`
+* `Response Detail`: depends on specific device
 
