@@ -1,9 +1,9 @@
-Use 8051 as Coprocessor
-=======================
+Use MCU as Coprocessor
+======================
 
 ```
 +-----------+               +------+
-|  Primary  |  Serial Line  | 8051 |
+|  Primary  |  Serial Line  | MCU  |
 | Processor |<------------->|      |
 +-----------+               +------+
 ```
