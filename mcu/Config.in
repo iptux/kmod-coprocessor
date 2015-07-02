@@ -1,0 +1,3 @@
+if PACKAGE_kmod-mcu
+source "src/Kconfig"
+endif

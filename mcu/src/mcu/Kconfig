@@ -1,0 +1,32 @@
+menuconfig MCU
+	tristate
+	default m
+	help
+	  Control and communicate with mcu via serial line.
+
+	  This support is also available as a module.  If so, the module
+	  will be called mcu.
+
+config MCU_LDISC
+	bool "TTY Line disciplines for MCU"
+	depends on MCU
+	help
+	  use serial line as low level io to MCU
+
+config MCU_CORE
+	bool "MCU Core Control module"
+	depends on MCU
+	default y
+
+config MCU_GPIO
+	bool "GPIO Control module for MCU"
+	depends on MCU_CORE
+
+config MCU_OLED
+	bool "OLED Control module for MCU"
+	depends on MCU_CORE
+
+config MCU_BATTERY
+	bool "Battery module for MCU"
+	depends on MCU_CORE
+
