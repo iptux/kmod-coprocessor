@@ -1,8 +1,8 @@
 obj-$(CONFIG_MCU) += mcu.o
 
-mcu-$(CONFIG_MCU_LDISC) += mcu_ldisc.o
-mcu-$(CONFIG_MCU_CORE) += mcu_core.o
-mcu-$(CONFIG_MCU_GPIO) += mcu_gpio.o
-mcu-$(CONFIG_MCU_OLED) += mcu_oled.o
-mcu-$(CONFIG_MCU_BATTERY) += mcu_battery.o
+mcu-$(CONFIG_MCU_LDISC) += mcu-ldisc.o
+mcu-$(CONFIG_MCU_CORE) += mcu-core.o
+mcu-$(CONFIG_MCU_GPIO) += mcu-gpio.o
+mcu-$(CONFIG_MCU_OLED) += mcu-oled.o
+mcu-$(CONFIG_MCU_BATTERY) += mcu-battery.o
 
