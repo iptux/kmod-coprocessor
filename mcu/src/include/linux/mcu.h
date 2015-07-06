@@ -41,14 +41,14 @@ struct mcu_driver {
 #define to_mcu_driver(d) container_of(d, struct mcu_driver, driver)
 
 
-extern int mcu_register_driver(struct module *, struct mcu_driver *);
-extern void mcu_del_driver(struct mcu_driver *);
+extern int __must_check __mcu_register_driver(struct mcu_driver *, struct module *, const char *);
+extern void mcu_unregister_driver(struct mcu_driver *);
 
-#define mcu_add_driver(driver) \
-		mcu_register_driver(THIS_MODULE, driver)
+#define mcu_register_driver(driver) \
+		__mcu_register_driver(driver, THIS_MODULE, KBUILD_MODNAME)
 
 #define module_mcu_driver(__mcu_driver) \
-		module_driver(__mcu_driver, mcu_add_driver, mcu_del_driver)
+		module_driver(__mcu_driver, mcu_register_driver, mcu_unregister_driver)
 
 #endif	// __LINUX_MCU_H_
 
