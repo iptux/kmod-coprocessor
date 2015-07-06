@@ -50,5 +50,15 @@ extern void mcu_unregister_driver(struct mcu_driver *);
 #define module_mcu_driver(__mcu_driver) \
 		module_driver(__mcu_driver, mcu_register_driver, mcu_unregister_driver)
 
+static inline void *mcu_get_drvdata(struct mcu_device *device)
+{
+	return dev_get_drvdata(&device->dev);
+}
+
+static inline void mcu_set_drvdata(struct mcu_device *device, void *data)
+{
+	dev_set_drvdata(&device->dev, data);
+}
+
 #endif	// __LINUX_MCU_H_
 
