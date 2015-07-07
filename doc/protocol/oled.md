@@ -19,16 +19,18 @@ Draw a region of OLED
 #### `Control Detail`
 
 ```
-+---+---+-------+------+
-| X | W | Y&I&H | DATA |
-+---+---+-------+------+
++---+---+----+-------+------+
+| X | W | W2 | Y&I&H | DATA |
++---+---+----+-------+------+
 ```
 
 * `X`: 1 byte, *x* of region
 * `W`: 1 byte, width of region
+* `W2`: 1 byte, draw width of region, may be smaller than `W`
 * `Y&I&H`: 1 byte
     - `Y`: lowest 3 bits, *y* of region
     - `I`: 4th bit, inverse the show
     - `H`: highest 4 bits, *height* of region
 * `DATA`: *data* to fill in the region
+  , size should be `W`*`H`.
 
