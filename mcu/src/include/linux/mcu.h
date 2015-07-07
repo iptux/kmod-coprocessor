@@ -24,9 +24,14 @@ struct mcu_device {
 };
 #define to_mcu_device(d) container_of(d, struct mcu_device, dev)
 
+struct mcu_device_id {
+	char name[MCU_NAME_SIZE];
+	kernel_ulong_t driver_data;	/* Data private to the driver */
+};
+
 struct mcu_driver {
 	/* Standard driver model interfaces */
-	int (*probe)(struct mcu_device *, const mcu_id *);
+	int (*probe)(struct mcu_device *, const struct mcu_device_id *);
 	int (*remove)(struct mcu_device *);
 
 	/* ioctl like command used to control the device */
@@ -36,6 +41,8 @@ struct mcu_driver {
 	void (*report)(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
 
 	struct device_driver driver;
+	const struct mcu_device_id *id_table;
+
 	struct list_head devices;
 };
 #define to_mcu_driver(d) container_of(d, struct mcu_driver, driver)
