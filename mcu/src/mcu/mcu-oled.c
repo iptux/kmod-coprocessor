@@ -527,12 +527,26 @@ static int mcu_oled_remove(struct mcu_device *device)
 	return 0;
 }
 
+#ifdef CONFIG_OF
+static const struct of_device_id mcu_oled_dt_match[] = {
+	{ .compatible = "lbs,mcu-oled" },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, mcu_oled_dt_match);
+#endif
+
 static struct mcu_device_id mcu_oled_id[] = {
 	{ "mcu-oled", 0 },
 	{ }
 };
 
 struct mcu_driver __mcu_oled = {
+	.driver	= {
+		.name	= "mcu-oled",
+#ifdef CONFIG_OF
+		.of_match_table = of_match_ptr(mcu_oled_dt_match),
+#endif
+	},
 	.probe	= mcu_oled_probe,
 	.remove	= mcu_oled_remove,
 	.id_table	= mcu_oled_id,
