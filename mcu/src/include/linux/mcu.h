@@ -66,5 +66,8 @@ static inline void mcu_set_drvdata(struct mcu_device *device, void *data)
 /* send command with device */
 extern int mcu_device_command(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
 
+/* use ping to check availability of the peer mcu */
+extern int mcu_check_ping(struct mcu_device *device);
+
 #endif	// __LINUX_MCU_H_
 
