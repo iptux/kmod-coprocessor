@@ -511,6 +511,7 @@ static int mcu_oled_probe(struct mcu_device *device, const struct mcu_device_id 
 	return ret;
 
 exit_misc_device_reg_failed:
+	mutex_destroy(&state->mutex);
 	kfree(state);
 exit_alloc_data_failed:
 	return ret;
@@ -521,6 +522,7 @@ static int mcu_oled_remove(struct mcu_device *device)
 	struct lq12864_device *state = mcu_get_drvdata(device);
 
 	misc_deregister(&lq12864_device);
+	mutex_destroy(&state->mutex);
 	kfree(state);
 	return 0;
 }
