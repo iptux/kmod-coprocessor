@@ -9,6 +9,7 @@
 #ifndef __LINUX_MCU_H_
 #define __LINUX_MCU_H_
 
+#include <linux/mod_devicetable.h>
 #include <linux/device.h>
 
 #define MCU_NAME_SIZE 20
