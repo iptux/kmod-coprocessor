@@ -32,7 +32,8 @@ Battery Status via coprocessor
 * `Status`: 1 byte
     - 0x00: unknown
     - 0x01: charging
-    - 0x02: charging full
-    - 0x03: discharging
-    - 0x04: battery not present
+    - 0x02: discharging
+    - 0x03: not changing
+    - 0x04: charging full
+    - 0x05: battery not present
 
