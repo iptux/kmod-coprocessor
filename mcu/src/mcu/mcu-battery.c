@@ -6,7 +6,8 @@
  * Create: 2015-07-08 13:38
  */
 
-#include <linux/mcu.h>
+#include <linux/module.h>
+#include <linux/of.h>
 #include <linux/power_supply.h>
 #include <linux/slab.h>
 #include <linux/mcu.h>
@@ -14,7 +15,7 @@
 
 #define MCU_BATTERY_STATUS_NOT_PRESENT 5
 
-static struct mcu_battery_private {
+struct mcu_battery_private {
 	struct mcu_device *device;
 	struct power_supply battery;
 	struct mutex mutex;
@@ -66,7 +67,7 @@ static int mcu_battery_get_property(struct power_supply *psy,
 		enum power_supply_property psp,
 		union power_supply_propval *val)
 {
-	struct struct mcu_battery_private *data = container_of(psy, struct mcu_battery_private, battery);
+	struct mcu_battery_private *data = container_of(psy, struct mcu_battery_private, battery);
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
@@ -123,7 +124,7 @@ static int mcu_battery_probe(struct mcu_device *device, const struct mcu_device_
 		}
 
 		{
-			mutex_init(&data->lock);
+			mutex_init(&data->mutex);
 			mcu_set_drvdata(device, data);
 			data->device = device;
 
@@ -134,7 +135,7 @@ static int mcu_battery_probe(struct mcu_device *device, const struct mcu_device_
 			data->battery.num_properties	= ARRAY_SIZE(mcu_battery_props);
 			data->status	= POWER_SUPPLY_STATUS_DISCHARGING;
 
-			ret = power_supply_register(&data->device, &data->battery);
+			ret = power_supply_register(&device->dev, &data->battery);
 			if (ret) {
 				pr_err("mcu-battery: power_supply_register register failed\n");
 				goto exit_misc_device_reg_failed;
@@ -152,7 +153,7 @@ static int mcu_battery_probe(struct mcu_device *device, const struct mcu_device_
 
 exit_misc_device_reg_failed:
 	mutex_destroy(&data->mutex);
-	kfree(state);
+	kfree(data);
 exit_alloc_data_failed:
 	return ret;
 }
@@ -172,7 +173,7 @@ static void mcu_battery_report(struct mcu_device *device, unsigned char cmd, uns
 	struct mcu_battery_private *data = mcu_get_drvdata(device);
 
 	if (1 != len) {
-		pr_err(device->dev, "invaild length: cmd=%d, len=%d\n", cmd, len);
+		dev_err(&device->dev, "invaild length: cmd=%d, len=%d\n", cmd, len);
 		return;
 	}
 
@@ -184,12 +185,12 @@ static void mcu_battery_report(struct mcu_device *device, unsigned char cmd, uns
 		mcu_battery_set_status(data, buffer[0]);
 		break;
 	default:
-		pr_warn(device->dev, "unknown command: cmd=%d, data=%#x\n", cmd, buffer[0]);
+		dev_warn(&device->dev, "unknown command: cmd=%d, data=%#x\n", cmd, buffer[0]);
 		break;
 	}
 }
 
-#define CONFIG_OF
+#ifdef CONFIG_OF
 static const struct of_device_id mcu_battery_dt_match[] = {
 	{ .compatible = "lbs,mcu-battery" },
 	{ },
@@ -208,7 +209,7 @@ struct mcu_driver __mcu_battery = {
 #ifdef CONFIG_OF
 		.of_match_table = of_match_ptr(mcu_battery_dt_match),
 #endif
-	};
+	},
 	.probe	= mcu_battery_probe,
 	.remove	= mcu_battery_remove,
 	.id_table	= mcu_battery_id,
