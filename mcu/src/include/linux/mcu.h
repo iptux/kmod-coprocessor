@@ -9,7 +9,6 @@
 #ifndef __LINUX_MCU_H_
 #define __LINUX_MCU_H_
 
-
 #include <linux/device.h>
 
 #define MCU_NAME_SIZE 20
@@ -33,9 +32,6 @@ struct mcu_driver {
 	/* Standard driver model interfaces */
 	int (*probe)(struct mcu_device *, const struct mcu_device_id *);
 	int (*remove)(struct mcu_device *);
-
-	/* ioctl like command used to control the device */
-	int (*command)(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
 
 	/* device report callback like command */
 	void (*report)(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
@@ -66,6 +62,9 @@ static inline void mcu_set_drvdata(struct mcu_device *device, void *data)
 {
 	dev_set_drvdata(&device->dev, data);
 }
+
+/* send command with device */
+extern int mcu_device_command(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
 
 #endif	// __LINUX_MCU_H_
 
