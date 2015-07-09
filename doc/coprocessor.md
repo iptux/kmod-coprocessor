@@ -20,9 +20,9 @@ Protocol
 
 ### `Length` Field
 
-* 2 byte
-* little endian
+* 1 byte
 * length of `Message Body`
+* maxium value 250
 
 ### `Identity` Field
 
