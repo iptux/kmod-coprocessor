@@ -57,3 +57,41 @@ report a value change event of a GPIO.
 
 `GPIO Number`: 1 byte
 
+### GPIO Get Direction
+
+`Control Code`: 0x65('e')
+
+#### Request
+
+```
++-------------+
+| GPIO Number |
++-------------+
+```
+
+`GPIO Number`: 1 byte
+
+#### Response
+
+```
++-----------+
+| Direction |
++-----------+
+```
+
+`GPIO Value`: 0 for out, 1 for in
+
+### GPIO Set Direction
+
+`Control Code`: 0x69('i') for set to input, 0x6f('o') for set to output
+
+#### Request
+
+```
++-------------+
+| GPIO Number |
++-------------+
+```
+
+`GPIO Number`: 1 byte
+
