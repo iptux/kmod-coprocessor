@@ -48,7 +48,7 @@ Protocol
 ### `Header Checksum` Field
 
 * 1 byte
-* checksum of `Length`, `Identity` and `Message Checksum` field
+* checksum of `Magic`, `Length`, `Identity` and `Message Checksum` field
 
 ### Checksum Algorithm
 
