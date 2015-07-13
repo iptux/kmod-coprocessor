@@ -13,10 +13,15 @@ Protocol
 --------
 
 ```
-+--------+----------+------------------+-----------------+--------------+
-| Length | Identity | Message Checksum | Header Checksum | Message Body |
-+--------+----------+------------------+-----------------+--------------+
++-------+--------+----------+------------------+-----------------+--------------+
+| Magic | Length | Identity | Message Checksum | Header Checksum | Message Body |
++-------+--------+----------+------------------+-----------------+--------------+
 ```
+
+### `Magic` Field
+
+* 2 byte
+* first byte: 0x4d('M'), second byte: 0x43('C')
 
 ### `Length` Field
 
