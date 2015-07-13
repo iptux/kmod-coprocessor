@@ -45,15 +45,6 @@ struct mcu_driver {
 #define to_mcu_driver(d) container_of(d, struct mcu_driver, driver)
 
 
-extern int __must_check __mcu_register_driver(struct mcu_driver *, struct module *, const char *);
-extern void mcu_unregister_driver(struct mcu_driver *);
-
-#define mcu_register_driver(driver) \
-		__mcu_register_driver(driver, THIS_MODULE, KBUILD_MODNAME)
-
-#define module_mcu_driver(__mcu_driver) \
-		module_driver(__mcu_driver, mcu_register_driver, mcu_unregister_driver)
-
 static inline void *mcu_get_drvdata(struct mcu_device *device)
 {
 	return dev_get_drvdata(&device->dev);
