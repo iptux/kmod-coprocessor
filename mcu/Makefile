@@ -21,6 +21,7 @@ define KernelPackage/mcu/config
 endef
 
 EXTRA_KCONFIG:= \
+	MCU_TTY \
 	MCU_LDISC \
 	MCU_CORE \
 	MCU_GPIO \
