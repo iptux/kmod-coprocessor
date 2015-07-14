@@ -6,6 +6,7 @@
  * Create: 2015-07-08 13:13
  */
 
+#include <linux/slab.h>
 #include <linux/of.h>
 #include <linux/gpio.h>
 #include "mcu-internal.h"
@@ -19,6 +20,7 @@ struct mcu_gpio_private {
 static int mcu_gpio_command(struct gpio_chip *chip, unsigned char cmd, unsigned offset, int *value)
 {
 	struct mcu_gpio_private *data = to_mcu_gpio(chip);
+	struct mcu_device *device = data->device;
 	unsigned char buffer[1] = {offset};
 	int ret;
 
@@ -106,7 +108,9 @@ static int mcu_gpio_remove(struct mcu_device *device)
 {
 	struct mcu_gpio_private *data = mcu_get_drvdata(device);
 
-	return gpiochip_remove(&data->chip);
+	gpiochip_remove(&data->chip);
+
+	return 0;
 }
 
 #ifdef CONFIG_OF
@@ -123,12 +127,12 @@ static struct mcu_device_id mcu_gpio_id[] = {
 	{ }
 };
 
-struct mcu_driver __mcu_gpio {
+struct mcu_driver __mcu_gpio = {
 	.driver = {
 		.name = "mcu-gpio",
 		.owner = THIS_MODULE,
 #ifdef CONFIG_OF
-		.of_match_table = mcu_gpio_match,
+		.of_match_table = of_match_ptr(mcu_gpio_match),
 #endif
 	},
 	.probe	= mcu_gpio_probe,
