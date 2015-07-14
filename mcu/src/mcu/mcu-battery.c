@@ -190,7 +190,7 @@ static void mcu_battery_report(struct mcu_device *device, unsigned char cmd, uns
 	}
 }
 
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 static const struct of_device_id mcu_battery_dt_match[] = {
 	{ .compatible = "lbs,mcu-battery" },
 	{ },
@@ -206,7 +206,7 @@ static struct mcu_device_id mcu_battery_id[] = {
 struct mcu_driver __mcu_battery = {
 	.driver	= {
 		.name	= "mcu-battery",
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 		.of_match_table = of_match_ptr(mcu_battery_dt_match),
 #endif
 	},

@@ -113,7 +113,7 @@ static int mcu_gpio_remove(struct mcu_device *device)
 	return 0;
 }
 
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 static const struct of_device_id mcu_gpio_match[] = {
 	{ .compatible = "lbs,mcu-gpio" },
 	{},
@@ -131,7 +131,7 @@ struct mcu_driver __mcu_gpio = {
 	.driver = {
 		.name = "mcu-gpio",
 		.owner = THIS_MODULE,
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 		.of_match_table = of_match_ptr(mcu_gpio_match),
 #endif
 	},

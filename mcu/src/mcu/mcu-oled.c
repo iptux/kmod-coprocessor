@@ -528,7 +528,7 @@ static int mcu_oled_remove(struct mcu_device *device)
 	return 0;
 }
 
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 static const struct of_device_id mcu_oled_dt_match[] = {
 	{ .compatible = "lbs,mcu-oled" },
 	{ },
@@ -544,7 +544,7 @@ static struct mcu_device_id mcu_oled_id[] = {
 struct mcu_driver __mcu_oled = {
 	.driver	= {
 		.name	= "mcu-oled",
-#ifdef CONFIG_OF
+#if IS_ENABLED(CONFIG_OF)
 		.of_match_table = of_match_ptr(mcu_oled_dt_match),
 #endif
 	},
