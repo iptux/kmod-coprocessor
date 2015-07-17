@@ -142,7 +142,7 @@ int mcu_packet_send_pong(void)
 	return __mcu_packet_send(&mcu_packet_data->packet[1]);
 }
 
-static int mcu_packet_send_identity(unsigned char identity, mcu_device_id device_id, mcu_control_code control_code, const unsigned char *cp, int len)
+static int mcu_packet_send_identity(unsigned char identity, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
 	int ret;
 	unsigned char message_length = len + sizeof(struct mcu_packet_device_control);
@@ -163,12 +163,12 @@ static int mcu_packet_send_identity(unsigned char identity, mcu_device_id device
 	return ret;
 }
 
-int mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const unsigned char *cp, int len)
+int mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
 	return mcu_packet_send_identity(MCU_PACKET_CONTROL_REQUEST, device_id, control_code, cp, len);
 }
 
-int mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const unsigned char *cp, int len)
+int mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
 	return mcu_packet_send_identity(MCU_PACKET_CONTROL_RESPONSE, device_id, control_code, cp, len);
 }
@@ -274,9 +274,9 @@ static int mcu_packet_append(const unsigned char *cp, int count)
 	return len;
 }
 
-int mcu_packet_receive_buffer(const unsigned char *cp, int count)
+int mcu_packet_receive_buffer(const void *cp, int count)
 {
-	return mcu_packet_append(cp, count);
+	return mcu_packet_append((const unsigned char *)cp, count);
 }
 
 

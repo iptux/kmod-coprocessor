@@ -38,10 +38,10 @@ extern void mcu_packet_deinit(void) __exit;
 
 extern int mcu_packet_send_ping(void);
 extern int mcu_packet_send_pong(void);
-extern int mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const unsigned char *cp, int len);
-extern int mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const unsigned char *cp, int len);
+extern int mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
+extern int mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
 
-extern int mcu_packet_receive_buffer(const unsigned char *cp, int count);
+extern int mcu_packet_receive_buffer(const void *cp, int count);
 
 /* try to detect packet in buffer, should be called after mcu_packet_receive_buffer */
 extern void mcu_packet_buffer_detect(void);
