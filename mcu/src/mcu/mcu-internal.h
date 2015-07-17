@@ -7,6 +7,9 @@
  */
 
 
+#ifndef __MCU_INTERNAL_H_
+#define __MCU_INTERNAL_H_
+
 #include <linux/mcu.h>
 
 /*
@@ -25,4 +28,6 @@ extern struct mcu_driver __mcu_oled;
 #ifdef CONFIG_MCU_BATTERY
 extern struct mcu_driver __mcu_battery;
 #endif
+
+#endif	// __MCU_INTERNAL_H_
 
