@@ -125,10 +125,20 @@ static int __mcu_packet_send(struct mcu_packet *packet)
 	return mcu_packet_data->callback->write(packet, mcu_get_packet_length(packet));
 }
 
+static void __mcu_packet_do_xor(struct mcu_packet *packet)
+{
+	int i, len = mcu_get_packet_length(packet);
+	unsigned char *cp = (unsigned char *)packet;
+	for (i = 0; i < len; i++) {
+		cp[i] ^= MCU_PACKET_XOR;
+	}
+}
+
 static int mcu_packet_send(struct mcu_packet *packet)
 {
 	mcu_packet_header_fill(packet);
 
+	__mcu_packet_do_xor(packet);
 	return __mcu_packet_send(packet);
 }
 
@@ -266,8 +276,11 @@ static int mcu_packet_append(const unsigned char *cp, int count)
 
 	spin_lock(&mcu_packet_data->buffer_lock);
 	{
+		int i;
 		len = min(count, MCU_PACKET_BUFFER_SIZE - mcu_packet_data->buffer_end);
-		memcpy(&mcu_packet_data->buffer[mcu_packet_data->buffer_end], cp, len);
+		for (i = 0; i < len; i++) {
+			mcu_packet_data->buffer[mcu_packet_data->buffer_end + i] = cp[i] ^ MCU_PACKET_XOR;
+		}
 	}
 	spin_unlock(&mcu_packet_data->buffer_lock);
 
@@ -292,8 +305,10 @@ int __init mcu_packet_init(struct mcu_packet_callback *callback)
 
 	mcu_packet_data->packet[0].header.identity = MCU_PACKET_PING;
 	mcu_packet_header_fill(&mcu_packet_data->packet[0]);
+	__mcu_packet_do_xor(&mcu_packet_data->packet[0]);
 	mcu_packet_data->packet[1].header.identity = MCU_PACKET_PONG;
 	mcu_packet_header_fill(&mcu_packet_data->packet[1]);
+	__mcu_packet_do_xor(&mcu_packet_data->packet[1]);
 
 	spin_lock_init(&mcu_packet_data->buffer_lock);
 
