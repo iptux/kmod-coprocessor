@@ -70,7 +70,7 @@ static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, in
 	return 0 == ret ? ret : mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
 }
 
-static void mcu_gpio_report(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len)
+static void mcu_gpio_report(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len)
 {
 	struct mcu_gpio_private *data = mcu_get_drvdata(device);
 

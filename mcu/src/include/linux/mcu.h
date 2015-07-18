@@ -14,11 +14,11 @@
 
 #define MCU_NAME_SIZE 20
 
-typedef u8 mcu_id;
-typedef u16 mcu_len;
+typedef unsigned char mcu_device_id;
+typedef unsigned char mcu_control_code;
 
 struct mcu_device {
-	mcu_id device_id;
+	mcu_device_id device_id;
 	char name[MCU_NAME_SIZE];
 	struct device dev;
 };
@@ -35,7 +35,7 @@ struct mcu_driver {
 	int (*remove)(struct mcu_device *);
 
 	/* device report callback like command */
-	void (*report)(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
+	void (*report)(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len);
 
 	struct device_driver driver;
 	const struct mcu_device_id *id_table;
@@ -56,7 +56,7 @@ static inline void mcu_set_drvdata(struct mcu_device *device, void *data)
 }
 
 /* send command with device */
-extern int mcu_device_command(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len);
+extern int mcu_device_command(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len);
 
 /* use ping to check availability of the peer mcu */
 extern int mcu_check_ping(struct mcu_device *device);

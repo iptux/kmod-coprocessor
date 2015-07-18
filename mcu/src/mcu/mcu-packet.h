@@ -11,10 +11,8 @@
 #define __MCU_PACK_H_
 
 #include <linux/init.h>
+#include "linux/mcu.h"
 
-
-typedef unsigned char mcu_device_id;
-typedef unsigned char mcu_control_code;
 
 struct mcu_packet_callback {
 	/* low level write operation */

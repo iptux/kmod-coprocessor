@@ -168,7 +168,7 @@ static int mcu_battery_remove(struct mcu_device *device)
 	return 0;
 }
 
-static void mcu_battery_report(struct mcu_device *device, unsigned char cmd, unsigned char *buffer, mcu_len len)
+static void mcu_battery_report(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len)
 {
 	struct mcu_battery_private *data = mcu_get_drvdata(device);
 
