@@ -212,7 +212,7 @@ static struct mcu_packet * __mcu_packet_detect(void)
 {
 	int i;
 	struct mcu_packet *packet;
-	for (i = mcu_packet_data->buffer_start; i < mcu_packet_data->buffer_end; i++) {
+	for (i = mcu_packet_data->buffer_start; i < mcu_packet_data->buffer_end - 1; i++) {
 		if (MCU_PACKET_MAGIC0 == mcu_packet_data->buffer[i] && MCU_PACKET_MAGIC1 == mcu_packet_data->buffer[i + 1]) {
 			packet = (struct mcu_packet *)&mcu_packet_data->buffer[i];
 			if (mcu_packet_verify_checksum(packet)) {
