@@ -68,7 +68,6 @@ static int sermcu_ldisc_open(struct tty_struct *tty)
 {
 	struct sermcu *sermcu;
 
-	DBG("");
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
 
@@ -106,7 +105,6 @@ static struct tty_ldisc_ops sermcu_ldisc = {
 int __init sermcu_init(void)
 {
 	int ret;
-	DBG("");
 	ret = tty_register_ldisc(N_MCU, &sermcu_ldisc);
 	if (ret)
 		pr_err("sermcu: Error register line discipline, err=%d\n", ret);
@@ -116,7 +114,6 @@ int __init sermcu_init(void)
 
 void __exit sermcu_exit(void)
 {
-	DBG("");
 	tty_unregister_ldisc(N_MCU);
 }
 
