@@ -194,6 +194,11 @@ static int __mcu_packet_empty(void)
 	return mcu_packet_data->buffer_start == mcu_packet_data->buffer_end;
 }
 
+static int __mcu_packet_buffer_size(void)
+{
+	return mcu_packet_data->buffer_end - mcu_packet_data->buffer_start;
+}
+
 static void __mcu_packet_buffer_reset(void)
 {
 	mcu_packet_data->buffer_start = 0;
@@ -212,6 +217,12 @@ static struct mcu_packet * __mcu_packet_detect(void)
 {
 	int i;
 	struct mcu_packet *packet;
+
+	if (__mcu_packet_buffer_size() < sizeof(struct mcu_packet_header)) {
+		// smaller than a packet header, ignore
+		return NULL;
+	}
+
 	for (i = mcu_packet_data->buffer_start; i < mcu_packet_data->buffer_end - 1; i++) {
 		if (MCU_PACKET_MAGIC0 == mcu_packet_data->buffer[i] && MCU_PACKET_MAGIC1 == mcu_packet_data->buffer[i + 1]) {
 			packet = (struct mcu_packet *)&mcu_packet_data->buffer[i];
