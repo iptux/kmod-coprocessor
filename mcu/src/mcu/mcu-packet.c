@@ -284,7 +284,7 @@ static int mcu_packet_append(const unsigned char *cp, int count)
 		int i;
 		len = min(count, MCU_PACKET_BUFFER_SIZE - mcu_packet_data->buffer_end);
 		for (i = 0; i < len; i++) {
-			mcu_packet_data->buffer[mcu_packet_data->buffer_end + i] = cp[i] ^ MCU_PACKET_XOR;
+			mcu_packet_data->buffer[mcu_packet_data->buffer_end++] = cp[i] ^ MCU_PACKET_XOR;
 		}
 	}
 	spin_unlock(&mcu_packet_data->buffer_lock);
