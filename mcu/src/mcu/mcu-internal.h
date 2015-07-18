@@ -12,6 +12,9 @@
 
 #include <linux/mcu.h>
 
+// line disciplines number
+#define N_MCU 28
+
 /*
  * as all driver embedded in one module,
  * drivers have to be registered in one module_init()
@@ -27,6 +30,11 @@ extern struct mcu_driver __mcu_oled;
 
 #ifdef CONFIG_MCU_BATTERY
 extern struct mcu_driver __mcu_battery;
+#endif
+
+#ifdef CONFIG_MCU_LDISC
+extern int sermcu_init(void) __init;
+extern void sermcu_exit(void) __exit;
 #endif
 
 #endif	// __MCU_INTERNAL_H_
