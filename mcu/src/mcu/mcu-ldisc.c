@@ -31,17 +31,26 @@ static void sermcu_ldisc_receive(struct tty_struct *tty, const unsigned char *cp
 {
 	struct sermcu *sermcu = (struct sermcu *)tty->disc_data;
 	unsigned long flags;
+	int i;
+	int has_error = 0;
 
 	spin_lock_irqsave(&sermcu->lock, flags);
 
-	while (count--) {
+	for (i = 0; i < count; i++) {
 		if (fp && *fp++) {
 			// got an error
-			cp++;
+			has_error = 1;
 			continue;
 		}
-		mcu_receive(sermcu->mcu, cp++, 1);
+		if (has_error) {
+			mcu_receive(sermcu->mcu, &cp[i], 1);
+		}
 	}
+
+	if (!has_error) {
+		mcu_receive(sermcu->mcu, cp, count);
+	}
+
 	spin_unlock_irqrestore(&sermcu->lock, flags);
 }
 
