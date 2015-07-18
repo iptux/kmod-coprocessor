@@ -116,13 +116,18 @@ static int mcu_packet_verify_checksum(struct mcu_packet *packet)
 	return 1;
 }
 
-static int __mcu_packet_send(struct mcu_packet *packet)
+static int __mcu_packet_write(void *buffer, int count)
 {
 	if (!mcu_packet_data || !mcu_packet_data->callback) {
 		return -EINVAL;
 	}
 
-	return mcu_packet_data->callback->write(packet, mcu_get_packet_length(packet));
+	return mcu_packet_data->callback->write(buffer, count);
+}
+
+static int __mcu_packet_send(struct mcu_packet *packet)
+{
+	return __mcu_packet_write(packet, mcu_get_packet_length(packet));
 }
 
 static void __mcu_packet_do_xor(struct mcu_packet *packet)
@@ -144,12 +149,12 @@ static int mcu_packet_send(struct mcu_packet *packet)
 
 int mcu_packet_send_ping(void)
 {
-	return __mcu_packet_send(&mcu_packet_data->packet[0]);
+	return __mcu_packet_write(&mcu_packet_data->packet[0], sizeof(struct mcu_packet_header));
 }
 
 int mcu_packet_send_pong(void)
 {
-	return __mcu_packet_send(&mcu_packet_data->packet[1]);
+	return __mcu_packet_write(&mcu_packet_data->packet[1], sizeof(struct mcu_packet_header));
 }
 
 static int mcu_packet_send_identity(unsigned char identity, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
@@ -218,7 +223,7 @@ static struct mcu_packet * __mcu_packet_detect(void)
 	}
 
 	// not found, try to reset buffer
-	__mcu_packet_buffer_consume(i - mcu_packet_data->buffer_start);
+	//__mcu_packet_buffer_consume(i - mcu_packet_data->buffer_start);
 
 	return NULL;
 }
