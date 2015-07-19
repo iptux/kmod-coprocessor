@@ -141,6 +141,11 @@ static int mcu_packet_send(struct mcu_packet *packet)
 	return __mcu_packet_write(packet, len);
 }
 
+void mcu_packet_free(struct mcu_packet *packet)
+{
+	kfree(packet);
+}
+
 static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
 {
 	int ret;
