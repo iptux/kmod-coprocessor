@@ -226,6 +226,9 @@ static int __mcu_packet_buffer_size(void)
 
 static void __mcu_packet_buffer_reset(void)
 {
+	if (likely(mcu_packet_data->buffer_start < MCU_PACKET_BUFFER_SIZE / 2)) {
+		return;
+	}
 	mcu_packet_data->buffer_start = 0;
 	mcu_packet_data->buffer_end = 0;
 }
