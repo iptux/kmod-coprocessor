@@ -13,7 +13,7 @@ config MCU_TTY
 
 config MCU_LDISC
 	bool "TTY Line disciplines for MCU"
-	depends on MCU
+	depends on MCU_TTY
 	help
 	  use serial line as low level io to MCU
 
