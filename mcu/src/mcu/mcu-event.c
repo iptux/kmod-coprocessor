@@ -51,9 +51,11 @@ void mcu_notify_event(struct mcu_event *event)
 	unsigned long flags;
 	spin_lock_irqsave(&mcu_event_lock, flags);
 
+	if (waitqueue_active(&mcu_wait_queue)) {
 	mcu_event_waited = event;
 	set_bit(event->type, &mcu_event_flags);
 	wake_up(&mcu_wait_queue);
+	}
 
 	spin_unlock_irqrestore(&mcu_event_lock, flags);
 }
