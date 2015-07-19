@@ -76,6 +76,7 @@ static int sermcu_ldisc_open(struct tty_struct *tty)
 		return -ENOMEM;
 
 	sermcu->tty = tty;
+	sermcu->mcu = mcu_tty_bus;
 	spin_lock_init(&sermcu->lock);
 	tty->disc_data = sermcu;
 	tty->receive_room = 256;

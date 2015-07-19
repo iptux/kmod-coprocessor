@@ -11,6 +11,7 @@
 #define __MCU_INTERNAL_H_
 
 #include <linux/mcu.h>
+#include "mcu-bus.h"
 
 // line disciplines number
 #define N_MCU 28
@@ -40,6 +41,8 @@ extern void sermcu_exit(void) __exit;
 #ifdef CONFIG_MCU_TTY
 extern int mcu_tty_init(void) __init;
 extern void mcu_tty_exit(void) __exit;
+// hack for ldisc
+extern struct mcu_bus_device *mcu_tty_bus;
 #endif
 
 #endif	// __MCU_INTERNAL_H_

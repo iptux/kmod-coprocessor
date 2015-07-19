@@ -144,6 +144,9 @@ static int mcu_tty_probe(struct platform_device *op)
 		goto fail_add;
 	}
 
+	// hack for ldisc
+	mcu_tty_bus = &data->bus;
+
 	return ret;
 
 fail_add:
