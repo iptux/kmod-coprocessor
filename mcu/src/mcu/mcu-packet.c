@@ -52,7 +52,7 @@ struct mcu_packet_private {
 	spinlock_t buffer_lock;
 
 	struct mcu_packet_callback *callback;
-} *mcu_packet_data = NULL;
+};
 
 static int mcu_get_packet_length(struct mcu_packet *packet)
 {
@@ -113,13 +113,14 @@ static int mcu_packet_verify_checksum(struct mcu_packet *packet)
 	return 1;
 }
 
-static int __mcu_packet_write(void *buffer, int count)
+static int __mcu_packet_write(struct mcu_bus_device *bus, void *buffer, int count)
 {
+	struct mcu_packet_private *mcu_packet_data = bus->pkt_data;
 	if (!mcu_packet_data || !mcu_packet_data->callback) {
 		return -EINVAL;
 	}
 
-	return mcu_packet_data->callback->write(buffer, count);
+	return mcu_packet_data->callback->write(bus, buffer, count);
 }
 
 static void __mcu_packet_do_xor(struct mcu_packet *packet)
@@ -131,14 +132,14 @@ static void __mcu_packet_do_xor(struct mcu_packet *packet)
 	}
 }
 
-static int mcu_packet_send(struct mcu_packet *packet)
+static int mcu_packet_send(struct mcu_bus_device *bus, struct mcu_packet *packet)
 {
 	int len = mcu_get_packet_length(packet);
 	mcu_packet_header_fill(packet);
 
 	// after xor, package is damaged, mcu_get_packet_length() will get wrong result
 	__mcu_packet_do_xor(packet);
-	return __mcu_packet_write(packet, len);
+	return __mcu_packet_write(bus, packet, len);
 }
 
 void mcu_packet_free(struct mcu_packet *packet)
@@ -146,7 +147,7 @@ void mcu_packet_free(struct mcu_packet *packet)
 	kfree(packet);
 }
 
-static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
+static struct mcu_packet *__mcu_packet_send_ping(struct mcu_bus_device *bus, unsigned char identity)
 {
 	int ret;
 	struct mcu_packet *packet = kzalloc(sizeof(struct mcu_packet), GFP_KERNEL);
@@ -157,7 +158,7 @@ static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
 	packet->header.identity = identity;
 	packet->header.length = 0;
 
-	ret = mcu_packet_send(packet);
+	ret = mcu_packet_send(bus, packet);
 	if (unlikely(ret < sizeof(struct mcu_packet_header))) {
 		kfree(packet);
 		packet = NULL;
@@ -166,17 +167,17 @@ static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
 	return packet;
 }
 
-struct mcu_packet *mcu_packet_send_ping(void)
+struct mcu_packet *mcu_packet_send_ping(struct mcu_bus_device *bus)
 {
-	return __mcu_packet_send_ping(MCU_PACKET_PING);
+	return __mcu_packet_send_ping(bus, MCU_PACKET_PING);
 }
 
-struct mcu_packet *mcu_packet_send_pong(void)
+struct mcu_packet *mcu_packet_send_pong(struct mcu_bus_device *bus)
 {
-	return __mcu_packet_send_ping(MCU_PACKET_PONG);
+	return __mcu_packet_send_ping(bus, MCU_PACKET_PONG);
 }
 
-static struct mcu_packet *mcu_packet_send_control(unsigned char identity, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
+static struct mcu_packet *mcu_packet_send_control(struct mcu_bus_device *bus, unsigned char identity, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
 	int ret;
 	unsigned char message_length = len + sizeof(struct mcu_packet_device_control);
@@ -194,7 +195,7 @@ static struct mcu_packet *mcu_packet_send_control(unsigned char identity, mcu_de
 		memcpy(&packet->message.control.detail, cp, len);
 	}
 
-	ret = mcu_packet_send(packet);
+	ret = mcu_packet_send(bus, packet);
 	if (unlikely(ret < sizeof(struct mcu_packet_header) + message_length)) {
 		kfree(packet);
 		packet = NULL;
@@ -203,28 +204,28 @@ static struct mcu_packet *mcu_packet_send_control(unsigned char identity, mcu_de
 	return packet;
 }
 
-struct mcu_packet *mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
+struct mcu_packet *mcu_packet_send_control_request(struct mcu_bus_device *bus, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
-	return mcu_packet_send_control(MCU_PACKET_CONTROL_REQUEST, device_id, control_code, cp, len);
+	return mcu_packet_send_control(bus, MCU_PACKET_CONTROL_REQUEST, device_id, control_code, cp, len);
 }
 
-struct mcu_packet *mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
+struct mcu_packet *mcu_packet_send_control_response(struct mcu_bus_device *bus, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len)
 {
-	return mcu_packet_send_control(MCU_PACKET_CONTROL_RESPONSE, device_id, control_code, cp, len);
+	return mcu_packet_send_control(bus, MCU_PACKET_CONTROL_RESPONSE, device_id, control_code, cp, len);
 }
 
 
-static int __mcu_packet_empty(void)
+static int __mcu_packet_empty(struct mcu_packet_private *mcu_packet_data)
 {
 	return mcu_packet_data->buffer_start == mcu_packet_data->buffer_end;
 }
 
-static int __mcu_packet_buffer_size(void)
+static int __mcu_packet_buffer_size(struct mcu_packet_private *mcu_packet_data)
 {
 	return mcu_packet_data->buffer_end - mcu_packet_data->buffer_start;
 }
 
-static void __mcu_packet_buffer_reset(void)
+static void __mcu_packet_buffer_reset(struct mcu_packet_private *mcu_packet_data)
 {
 	if (likely(mcu_packet_data->buffer_start < MCU_PACKET_BUFFER_SIZE / 2)) {
 		return;
@@ -233,20 +234,20 @@ static void __mcu_packet_buffer_reset(void)
 	mcu_packet_data->buffer_end = 0;
 }
 
-static void __mcu_packet_buffer_consume(int count)
+static void __mcu_packet_buffer_consume(struct mcu_packet_private *mcu_packet_data, int count)
 {
 	mcu_packet_data->buffer_start += count;
-	if (__mcu_packet_empty()) {
-		__mcu_packet_buffer_reset();
+	if (__mcu_packet_empty(mcu_packet_data)) {
+		__mcu_packet_buffer_reset(mcu_packet_data);
 	}
 }
 
-static struct mcu_packet * __mcu_packet_detect(void)
+static struct mcu_packet * __mcu_packet_detect(struct mcu_packet_private *mcu_packet_data)
 {
 	int i;
 	struct mcu_packet *packet;
 
-	if (__mcu_packet_buffer_size() < sizeof(struct mcu_packet_header)) {
+	if (__mcu_packet_buffer_size(mcu_packet_data) < sizeof(struct mcu_packet_header)) {
 		// smaller than a packet header, ignore
 		return NULL;
 	}
@@ -260,7 +261,7 @@ static struct mcu_packet * __mcu_packet_detect(void)
 					packet = NULL;
 					continue;
 				}
-				__mcu_packet_buffer_consume(i + mcu_get_packet_length(packet) - mcu_packet_data->buffer_start);
+				__mcu_packet_buffer_consume(mcu_packet_data, i + mcu_get_packet_length(packet) - mcu_packet_data->buffer_start);
 				return packet;
 			}
 		}
@@ -272,43 +273,45 @@ static struct mcu_packet * __mcu_packet_detect(void)
 	return NULL;
 }
 
-static void __mcu_packet_report(struct mcu_packet *packet)
+static void __mcu_packet_report(struct mcu_bus_device *bus, struct mcu_packet *packet)
 {
+	struct mcu_packet_private *mcu_packet_data = bus->pkt_data;
 	switch (packet->header.identity) {
 	case MCU_PACKET_PING:
-		mcu_packet_data->callback->ping(packet);
+		mcu_packet_data->callback->ping(bus, packet);
 		break;
 	case MCU_PACKET_PONG:
-		mcu_packet_data->callback->pong(packet);
+		mcu_packet_data->callback->pong(bus, packet);
 		break;
 	case MCU_PACKET_CONTROL_REQUEST:
-		mcu_packet_data->callback->new_request(packet);
+		mcu_packet_data->callback->new_request(bus, packet);
 		break;
 	case MCU_PACKET_CONTROL_RESPONSE:
-		mcu_packet_data->callback->new_response(packet);
+		mcu_packet_data->callback->new_response(bus, packet);
 		break;
 	default:
 		break;
 	}
 }
 
-void mcu_packet_buffer_detect(void)
+void mcu_packet_buffer_detect(struct mcu_bus_device *bus)
 {
+	struct mcu_packet_private *mcu_packet_data = bus->pkt_data;
 	if (unlikely(!mcu_packet_data)) {
 		return;
 	}
 
 	spin_lock(&mcu_packet_data->buffer_lock);
 	{
-		struct mcu_packet *packet = __mcu_packet_detect();
+		struct mcu_packet *packet = __mcu_packet_detect(mcu_packet_data);
 		if (packet) {
-			__mcu_packet_report(packet);
+			__mcu_packet_report(bus, packet);
 		}
 	}
 	spin_unlock(&mcu_packet_data->buffer_lock);
 }
 
-static int mcu_packet_append(const unsigned char *cp, int count)
+static int mcu_packet_append(struct mcu_packet_private *mcu_packet_data, const unsigned char *cp, int count)
 {
 	int len = 0;
 	if (unlikely(!mcu_packet_data)) {
@@ -328,15 +331,15 @@ static int mcu_packet_append(const unsigned char *cp, int count)
 	return len;
 }
 
-int mcu_packet_receive_buffer(const void *cp, int count)
+int mcu_packet_receive_buffer(struct mcu_bus_device *bus, const void *cp, int count)
 {
-	return mcu_packet_append((const unsigned char *)cp, count);
+	return mcu_packet_append(bus->pkt_data, (const unsigned char *)cp, count);
 }
 
 
-int __init mcu_packet_init(struct mcu_packet_callback *callback)
+int __init mcu_packet_init(struct mcu_bus_device *bus, struct mcu_packet_callback *callback)
 {
-	// internal api, not param check on callback
+	struct mcu_packet_private *mcu_packet_data;
 
 	mcu_packet_data = kzalloc(sizeof(*mcu_packet_data), GFP_KERNEL);
 	if (unlikely(!mcu_packet_data)) {
@@ -346,12 +349,13 @@ int __init mcu_packet_init(struct mcu_packet_callback *callback)
 
 	spin_lock_init(&mcu_packet_data->buffer_lock);
 
+	bus->pkt_data = mcu_packet_data;
 	return 0;
 }
 
-void __exit mcu_packet_deinit(void)
+void __exit mcu_packet_deinit(struct mcu_bus_device *bus)
 {
-	kfree(mcu_packet_data);
-	mcu_packet_data = NULL;
+	kfree(bus->pkt_data);
+	bus->pkt_data = NULL;
 }
 

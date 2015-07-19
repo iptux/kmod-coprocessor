@@ -13,40 +13,41 @@
 #include <linux/init.h>
 #include "linux/mcu.h"
 
+struct mcu_bus_device;
 struct mcu_packet;
 
 struct mcu_packet_callback {
 	/* low level write operation */
-	int (*write)(const void *cp, int count);
+	int (*write)(struct mcu_bus_device *, const void *cp, int count);
 
 	/* ping request detected */
-	void (*ping)(struct mcu_packet *);
+	void (*ping)(struct mcu_bus_device *, struct mcu_packet *);
 
 	/* ping response detected */
-	void (*pong)(struct mcu_packet *);
+	void (*pong)(struct mcu_bus_device *, struct mcu_packet *);
 
 	/* device control request detected */
-	void (*new_request)(struct mcu_packet *);
+	void (*new_request)(struct mcu_bus_device *, struct mcu_packet *);
 
 	/* device control response detected */
-	void (*new_response)(struct mcu_packet *);
+	void (*new_response)(struct mcu_bus_device *, struct mcu_packet *);
 };
 
-extern int mcu_packet_init(struct mcu_packet_callback *callback) __init;
-extern void mcu_packet_deinit(void) __exit;
+extern int mcu_packet_init(struct mcu_bus_device *, struct mcu_packet_callback *callback) __init;
+extern void mcu_packet_deinit(struct mcu_bus_device *) __exit;
 
 /* the send packet should not be free before got reply */
 extern void mcu_packet_free(struct mcu_packet *);
 
-extern struct mcu_packet *mcu_packet_send_ping(void);
-extern struct mcu_packet *mcu_packet_send_pong(void);
-extern struct mcu_packet *mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
-extern struct mcu_packet *mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
+extern struct mcu_packet *mcu_packet_send_ping(struct mcu_bus_device *);
+extern struct mcu_packet *mcu_packet_send_pong(struct mcu_bus_device *);
+extern struct mcu_packet *mcu_packet_send_control_request(struct mcu_bus_device *, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
+extern struct mcu_packet *mcu_packet_send_control_response(struct mcu_bus_device *, mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
 
-extern int mcu_packet_receive_buffer(const void *cp, int count);
+extern int mcu_packet_receive_buffer(struct mcu_bus_device *, const void *cp, int count);
 
 /* try to detect packet in buffer, should be called after mcu_packet_receive_buffer */
-extern void mcu_packet_buffer_detect(void);
+extern void mcu_packet_buffer_detect(struct mcu_bus_device *);
 
 #endif	//  __MCU_PACK_H_
 
