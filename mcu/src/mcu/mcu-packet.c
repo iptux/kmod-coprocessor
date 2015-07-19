@@ -9,6 +9,7 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 #include "mcu-packet.h"
+#include "mcu-internal.h"
 
 /* recommended packet receive buffer size */
 #define MCU_PACKET_BUFFER_SIZE	512
