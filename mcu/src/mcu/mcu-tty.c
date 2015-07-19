@@ -16,6 +16,7 @@
 #include <linux/mcu.h>
 #include "mcu-internal.h"
 
+struct mcu_bus_device *mcu_tty_bus = NULL;
 
 struct mcu_tty_private {
 	struct mcu_bus_device bus;
