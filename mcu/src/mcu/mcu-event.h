@@ -49,11 +49,5 @@ void mcu_remove_pending_events(void *object);
 
 #define mcu_queue_event(object, type) __mcu_queue_event((object), THIS_MODULE, (type))
 
-
-extern void mcu_queue_wait(struct mcu_event *event);
-extern struct mcu_event *mcu_get_wait(enum mcu_event_type type);
-extern int mcu_wait_event(struct mcu_event *event, int what, int timeout);
-extern void mcu_wait_set(struct mcu_event *event, int what);
-
 #endif	// __MCU_EVENT_H_
 
