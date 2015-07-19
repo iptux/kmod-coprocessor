@@ -7,6 +7,10 @@ menuconfig MCU
 	  This support is also available as a module.  If so, the module
 	  will be called mcu.
 
+config MCU_TTY
+	bool "TTY backend for MCU drivers"
+	default y
+
 config MCU_LDISC
 	bool "TTY Line disciplines for MCU"
 	depends on MCU
