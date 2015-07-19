@@ -49,6 +49,15 @@ struct mcu_driver {
 };
 #define to_mcu_driver(d) container_of(d, struct mcu_driver, driver)
 
+struct mcu_board_info {
+	char type[MCU_NAME_SIZE];
+	mcu_device_id device_id;
+	struct device_node *of_node;
+	void *platform_data;
+};
+
+struct mcu_device *mcu_new_device(struct mcu_bus_device *bus, struct mcu_board_info const *info);
+int mcu_remove_device(struct mcu_device *device);
 
 static inline void *mcu_get_drvdata(struct mcu_device *device)
 {
