@@ -252,6 +252,11 @@ static struct mcu_packet * __mcu_packet_detect(void)
 		if (MCU_PACKET_MAGIC0 == mcu_packet_data->buffer[i] && MCU_PACKET_MAGIC1 == mcu_packet_data->buffer[i + 1]) {
 			packet = (struct mcu_packet *)&mcu_packet_data->buffer[i];
 			if (mcu_packet_verify_checksum(packet)) {
+				// ignore if buffer to small
+				if (i + mcu_get_packet_length(packet) > mcu_packet_data->buffer_end) {
+					packet = NULL;
+					continue;
+				}
 				__mcu_packet_buffer_consume(i + mcu_get_packet_length(packet) - mcu_packet_data->buffer_start);
 				return packet;
 			}
