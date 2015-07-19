@@ -109,11 +109,6 @@ static int mcu_battery_probe(struct mcu_device *device, const struct mcu_device_
 	struct mcu_battery_private *data;
 	int ret = -ENODEV;
 
-	if (!mcu_check_ping(device)) {
-		dev_err(dev, "mcu peer not present\n");
-		return -ENODEV;
-	}
-
 	switch (id->driver_data) {
 	case 0:
 		data = kzalloc(sizeof(struct mcu_battery_private), GFP_KERNEL);

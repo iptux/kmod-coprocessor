@@ -475,11 +475,6 @@ static int mcu_oled_probe(struct mcu_device *device, const struct mcu_device_id 
 	struct lq12864_data *state;
 	int ret = -ENODEV;
 
-	if (!mcu_check_ping(device)) {
-		dev_err(dev, "mcu peer not present\n");
-		return -ENODEV;
-	}
-
 	switch (id->driver_data) {
 	case 0:
 		state = kzalloc(sizeof(struct lq12864_data), GFP_KERNEL);
