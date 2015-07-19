@@ -13,6 +13,7 @@
 #include <linux/init.h>
 #include "linux/mcu.h"
 
+struct mcu_packet;
 
 struct mcu_packet_callback {
 	/* low level write operation */
@@ -34,10 +35,13 @@ struct mcu_packet_callback {
 extern int mcu_packet_init(struct mcu_packet_callback *callback) __init;
 extern void mcu_packet_deinit(void) __exit;
 
-extern int mcu_packet_send_ping(void);
-extern int mcu_packet_send_pong(void);
-extern int mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
-extern int mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
+/* the send packet should not be free before got reply */
+extern void mcu_packet_free(struct mcu_packet *);
+
+extern struct mcu_packet *mcu_packet_send_ping(void);
+extern struct mcu_packet *mcu_packet_send_pong(void);
+extern struct mcu_packet *mcu_packet_send_control_request(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
+extern struct mcu_packet *mcu_packet_send_control_response(mcu_device_id device_id, mcu_control_code control_code, const void *cp, int len);
 
 extern int mcu_packet_receive_buffer(const void *cp, int count);
 
