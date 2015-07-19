@@ -97,8 +97,11 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 	data->chip.dev = &device->dev;
 	data->chip.label = dev_name(&device->dev);
 	data->chip.of_node = np;
+	ret = -1;
+	of_property_read_u32(np, "lbs,gpio-base", &ret);
+	data->chip.base = ret;
 	ret = 0x60;
-	of_property_read_u32(np, "lbs,ngpio", &ret);
+	of_property_read_u32(np, "lbs,num-gpios", &ret);
 	data->chip.ngpio = ret;
 	data->chip.get_direction = mcu_gpio_get_direction;
 	data->chip.direction_input = mcu_gpio_direction_input;
