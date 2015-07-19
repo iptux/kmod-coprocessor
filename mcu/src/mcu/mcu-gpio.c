@@ -80,7 +80,6 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 {
 	struct device_node *np = device->dev.of_node;
 	struct mcu_gpio_private *data;
-	const __be32 *ngpio;
 	int ret;
 
 	switch (id->driver_data) {
@@ -95,17 +94,11 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 		return -ENOMEM;
 	}
 
-	ngpio = of_get_property(np, "lbs,ngpio", &ret);
-	if (!ngpio || ret < sizeof(*ngpio)) {
-		ret = 0x60;
-	}
-	else {
-		ret = be32_to_cpup(ngpio);
-	}
-
 	data->chip.dev = &device->dev;
 	data->chip.label = dev_name(&device->dev);
 	data->chip.of_node = np;
+	ret = 0x60;
+	of_property_read_u32(np, "lbs,ngpio", &ret);
 	data->chip.ngpio = ret;
 	data->chip.get_direction = mcu_gpio_get_direction;
 	data->chip.direction_input = mcu_gpio_direction_input;
