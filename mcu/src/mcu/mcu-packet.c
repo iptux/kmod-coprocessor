@@ -122,11 +122,6 @@ static int __mcu_packet_write(void *buffer, int count)
 	return mcu_packet_data->callback->write(buffer, count);
 }
 
-static int __mcu_packet_send(struct mcu_packet *packet)
-{
-	return __mcu_packet_write(packet, mcu_get_packet_length(packet));
-}
-
 static void __mcu_packet_do_xor(struct mcu_packet *packet)
 {
 	int i, len = mcu_get_packet_length(packet);
@@ -138,10 +133,12 @@ static void __mcu_packet_do_xor(struct mcu_packet *packet)
 
 static int mcu_packet_send(struct mcu_packet *packet)
 {
+	int len = mcu_get_packet_length(packet);
 	mcu_packet_header_fill(packet);
 
+	// after xor, package is damaged, mcu_get_packet_length() will get wrong result
 	__mcu_packet_do_xor(packet);
-	return __mcu_packet_send(packet);
+	return __mcu_packet_write(packet, len);
 }
 
 static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
@@ -156,7 +153,7 @@ static struct mcu_packet *__mcu_packet_send_ping(unsigned char identity)
 	packet->header.length = 0;
 
 	ret = mcu_packet_send(packet);
-	if (unlikely(ret < mcu_get_packet_length(packet))) {
+	if (unlikely(ret < sizeof(struct mcu_packet_header))) {
 		kfree(packet);
 		packet = NULL;
 	}
@@ -193,7 +190,7 @@ static struct mcu_packet *mcu_packet_send_control(unsigned char identity, mcu_de
 	}
 
 	ret = mcu_packet_send(packet);
-	if (unlikely(ret < mcu_get_packet_length(packet))) {
+	if (unlikely(ret < sizeof(struct mcu_packet_header) + message_length)) {
 		kfree(packet);
 		packet = NULL;
 	}
