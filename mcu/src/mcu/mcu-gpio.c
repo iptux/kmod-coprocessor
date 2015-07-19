@@ -90,6 +90,11 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 		return -ENODEV;
 	}
 
+	data = kzalloc(sizeof(struct mcu_gpio_private), GFP_KERNEL);
+	if (!data) {
+		return -ENOMEM;
+	}
+
 	ngpio = of_get_property(np, "lbs,ngpio", &ret);
 	if (!ngpio || ret < sizeof(*ngpio)) {
 		ret = 0x60;
@@ -97,8 +102,6 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 	else {
 		ret = be32_to_cpup(ngpio);
 	}
-
-	data = kzalloc(sizeof(struct mcu_gpio_private), GFP_KERNEL);
 
 	data->chip.dev = &device->dev;
 	data->chip.label = dev_name(&device->dev);
