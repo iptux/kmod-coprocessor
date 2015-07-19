@@ -44,7 +44,7 @@ extern struct work_struct mcu_event_work;
 struct mcu_event *mcu_get_event(void);
 void mcu_free_event(struct mcu_event *event);
 void mcu_remove_duplicate_events(void *object, enum mcu_event_type type);
-int __mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type);
+struct mcu_event *__mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type);
 void mcu_remove_pending_events(void *object);
 
 #define mcu_queue_event(object, type) __mcu_queue_event((object), THIS_MODULE, (type))

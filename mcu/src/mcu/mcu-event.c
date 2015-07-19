@@ -105,11 +105,10 @@ void mcu_remove_duplicate_events(void *object, enum mcu_event_type type)
 	spin_unlock_irqrestore(&mcu_event_lock, flags);
 }
 
-int __mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type)
+struct mcu_event *__mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type)
 {
 	unsigned long flags;
-	struct mcu_event *event;
-	int retval = 0;
+	struct mcu_event *event = NULL;
 
 	spin_lock_irqsave(&mcu_event_lock, flags);
 
@@ -131,14 +130,13 @@ int __mcu_queue_event(void *object, struct module *owner, enum mcu_event_type ev
 	event = kmalloc(sizeof(struct mcu_event), GFP_ATOMIC);
 	if (!event) {
 		pr_err("Not enough memory to queue event %d\n", event_type);
-		retval = -ENOMEM;
 		goto out;
 	}
 
 	if (!try_module_get(owner)) {
 		pr_warning("Can't get module reference, dropping event %d\n", event_type);
 		kfree(event);
-		retval = -EINVAL;
+		event = NULL;
 		goto out;
 	}
 
@@ -151,7 +149,7 @@ int __mcu_queue_event(void *object, struct module *owner, enum mcu_event_type ev
 
 out:
 	spin_unlock_irqrestore(&mcu_event_lock, flags);
-	return retval;
+	return event;
 }
 
 void mcu_remove_pending_events(void *object)
