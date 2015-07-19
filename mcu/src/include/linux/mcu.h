@@ -17,10 +17,15 @@
 typedef unsigned char mcu_device_id;
 typedef unsigned char mcu_control_code;
 
+struct mcu_bus_device;
+
 struct mcu_device {
 	mcu_device_id device_id;
 	char name[MCU_NAME_SIZE];
+	struct mcu_bus_device *bus;
 	struct device dev;
+
+	struct list_head node;
 };
 #define to_mcu_device(d) container_of(d, struct mcu_device, dev)
 
