@@ -15,6 +15,50 @@
 static DEFINE_SPINLOCK(mcu_event_lock);	/* protects mcu_event_list */
 static LIST_HEAD(mcu_event_list);
 
+static DECLARE_WAIT_QUEUE_HEAD(mcu_wait_queue);
+static unsigned long mcu_event_flags = 0;
+static struct mcu_event *mcu_event_waited = NULL;
+
+struct mcu_event *mcu_wait_event(enum mcu_event_type type, int timeout)
+{
+	struct mcu_event *event = NULL;
+	unsigned long flags;
+	int ret;
+
+	while (1) {
+		ret = wait_event_interruptible_timeout(mcu_wait_queue, test_bit(type, &mcu_event_flags), msecs_to_jiffies(timeout));
+		if (ret <= 0) {
+			// timeout
+			break;
+		}
+		spin_lock_irqsave(&mcu_event_lock, flags);
+		// clear bit to avoid infinit loop
+		clear_bit(type, &mcu_event_flags);
+		if (mcu_event_waited && mcu_event_waited->type == type) {
+			// found
+			event = mcu_event_waited;
+			break;
+		}
+		mcu_free_event(mcu_event_waited);
+		spin_unlock_irqrestore(&mcu_event_lock, flags);
+	}
+
+	return event;
+}
+
+void mcu_notify_event(struct mcu_event *event)
+{
+	unsigned long flags;
+	spin_lock_irqsave(&mcu_event_lock, flags);
+
+	mcu_event_waited = event;
+	set_bit(event->type, &mcu_event_flags);
+	wake_up(&mcu_wait_queue);
+
+	spin_unlock_irqrestore(&mcu_event_lock, flags);
+}
+
+
 struct mcu_event *mcu_get_event(void)
 {
 	struct mcu_event *event = NULL;
