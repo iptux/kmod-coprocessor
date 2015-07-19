@@ -37,5 +37,10 @@ extern int sermcu_init(void) __init;
 extern void sermcu_exit(void) __exit;
 #endif
 
+#ifdef CONFIG_MCU_TTY
+extern int mcu_tty_init(void) __init;
+extern void mcu_tty_exit(void) __exit;
+#endif
+
 #endif	// __MCU_INTERNAL_H_
 
