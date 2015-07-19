@@ -215,6 +215,19 @@ struct mcu_packet *mcu_packet_send_control_response(struct mcu_bus_device *bus, 
 	return mcu_packet_send_control(bus, MCU_PACKET_CONTROL_RESPONSE, device_id, control_code, cp, len);
 }
 
+int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int *size)
+{
+	int len;
+	if (!packet || !buffer || !len) {
+		return -EFAULT;
+	}
+	len = packet->header.length - sizeof(struct mcu_packet_device_control);
+	len = min(*size, len);
+	*size = packet->header.length - sizeof(struct mcu_packet_device_control);
+	if (len)
+		memcpy(buffer, packet->message.control.detail, len);
+	return len;
+}
 
 static int __mcu_packet_empty(struct mcu_packet_private *mcu_packet_data)
 {

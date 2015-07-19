@@ -38,6 +38,7 @@ extern void mcu_packet_deinit(struct mcu_bus_device *) __exit;
 
 /* the send packet should not be free before got reply */
 extern void mcu_packet_free(struct mcu_packet *);
+extern int mcu_packet_copy_control_detail(struct mcu_packet *, void *, int *);
 
 extern struct mcu_packet *mcu_packet_send_ping(struct mcu_bus_device *);
 extern struct mcu_packet *mcu_packet_send_pong(struct mcu_bus_device *);
