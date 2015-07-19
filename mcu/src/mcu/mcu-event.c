@@ -19,7 +19,7 @@ static DECLARE_WAIT_QUEUE_HEAD(mcu_wait_queue);
 static unsigned long mcu_event_flags = 0;
 static struct mcu_event *mcu_event_waited = NULL;
 
-struct mcu_event *mcu_wait_event(enum mcu_event_type type, int timeout)
+struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type type, int timeout)
 {
 	struct mcu_event *event = NULL;
 	unsigned long flags;
@@ -34,7 +34,7 @@ struct mcu_event *mcu_wait_event(enum mcu_event_type type, int timeout)
 		spin_lock_irqsave(&mcu_event_lock, flags);
 		// clear bit to avoid infinit loop
 		clear_bit(type, &mcu_event_flags);
-		if (mcu_event_waited && mcu_event_waited->type == type) {
+		if (mcu_event_waited && mcu_event_waited->type == type && mcu_event_waited->bus == bus) {
 			// found
 			event = mcu_event_waited;
 			break;
@@ -108,7 +108,7 @@ void mcu_remove_duplicate_events(void *object, enum mcu_event_type type)
 	spin_unlock_irqrestore(&mcu_event_lock, flags);
 }
 
-struct mcu_event *__mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type)
+struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, struct module *owner, enum mcu_event_type event_type)
 {
 	unsigned long flags;
 	struct mcu_event *event = NULL;
@@ -145,6 +145,7 @@ struct mcu_event *__mcu_queue_event(void *object, struct module *owner, enum mcu
 
 	event->type = event_type;
 	event->object = object;
+	event->bus = bus;
 	event->owner = owner;
 
 	list_add_tail(&event->node, &mcu_event_list);

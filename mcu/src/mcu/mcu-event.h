@@ -21,30 +21,30 @@ enum mcu_event_type {
 	MCU_PONG_DETECTED,
 	MCU_CONTROL_REQUEST_DETECTED,
 	MCU_CONTROL_RESPONSE_DETECTED,
-	MCU_ATTACH_DRIVER,
-	MCU_SETUP_TTY,
-	MCU_CLOSE_TTY,
+	MCU_LATE_INIT,
 };
+
+struct mcu_bus_device;
 
 struct mcu_event {
 	enum mcu_event_type type;
 	void *object;
+	struct mcu_bus_device *bus;
 	struct module *owner;
 	struct list_head node;
 };
-
 
 extern struct work_struct mcu_event_work;
 
 struct mcu_event *mcu_get_event(void);
 void mcu_free_event(struct mcu_event *event);
 void mcu_remove_duplicate_events(void *object, enum mcu_event_type type);
-struct mcu_event *__mcu_queue_event(void *object, struct module *owner, enum mcu_event_type event_type);
+struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, struct module *owner, enum mcu_event_type event_type);
 void mcu_remove_pending_events(void *object);
-struct mcu_event *mcu_wait_event(enum mcu_event_type type, int timeout);
+struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type type, int timeout);
 void mcu_notify_event(struct mcu_event *event);
 
-#define mcu_queue_event(object, type) __mcu_queue_event((object), THIS_MODULE, (type))
+#define mcu_queue_event(object, bus, type) __mcu_queue_event((object), (bus), THIS_MODULE, (type))
 
 #endif	// __MCU_EVENT_H_
 
