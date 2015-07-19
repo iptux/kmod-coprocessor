@@ -20,16 +20,16 @@ struct mcu_packet_callback {
 	int (*write)(const void *cp, int count);
 
 	/* ping request detected */
-	void (*ping)(void);
+	void (*ping)(struct mcu_packet *);
 
 	/* ping response detected */
-	void (*pong)(void);
+	void (*pong)(struct mcu_packet *);
 
 	/* device control request detected */
-	void (*new_request)(mcu_device_id device_id, mcu_control_code ctl_code, const void *buffer, int count);
+	void (*new_request)(struct mcu_packet *);
 
 	/* device control response detected */
-	void (*new_response)(mcu_device_id device_id, mcu_control_code ctl_code, const void *buffer, int count);
+	void (*new_response)(struct mcu_packet *);
 };
 
 extern int mcu_packet_init(struct mcu_packet_callback *callback) __init;

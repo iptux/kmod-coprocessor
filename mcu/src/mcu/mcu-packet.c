@@ -263,24 +263,16 @@ static void __mcu_packet_report(struct mcu_packet *packet)
 {
 	switch (packet->header.identity) {
 	case MCU_PACKET_PING:
-		mcu_packet_data->callback->ping();
+		mcu_packet_data->callback->ping(packet);
 		break;
 	case MCU_PACKET_PONG:
-		mcu_packet_data->callback->pong();
+		mcu_packet_data->callback->pong(packet);
 		break;
 	case MCU_PACKET_CONTROL_REQUEST:
-		mcu_packet_data->callback->new_request(
-			packet->message.control.device_id,
-			packet->message.control.control_code,
-			&packet->message.control.detail,
-			packet->header.length - sizeof(struct mcu_packet_device_control));
+		mcu_packet_data->callback->new_request(packet);
 		break;
 	case MCU_PACKET_CONTROL_RESPONSE:
-		mcu_packet_data->callback->new_response(
-			packet->message.control.device_id,
-			packet->message.control.control_code,
-			&packet->message.control.detail,
-			packet->header.length - sizeof(struct mcu_packet_device_control));
+		mcu_packet_data->callback->new_response(packet);
 		break;
 	default:
 		break;
