@@ -14,6 +14,7 @@
 
 #define MCU_NAME_SIZE 20
 
+#define MCU_DEVICE_ERROR_ID	0xf0
 typedef unsigned char mcu_device_id;
 typedef unsigned char mcu_control_code;
 

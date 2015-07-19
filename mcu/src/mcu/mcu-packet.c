@@ -39,10 +39,16 @@ struct mcu_packet_device_control {
 	unsigned char detail[0];
 } __attribute__((packed));
 
+struct mcu_packet_error_response {
+	unsigned char error_id;
+	unsigned char error_code;
+} __attribute__((packed));
+
 struct mcu_packet {
 	struct mcu_packet_header header;
 	union {
 		struct mcu_packet_device_control control;
+		struct mcu_packet_error_response error;
 	} message;
 } __attribute__((packed));
 
@@ -220,6 +226,10 @@ int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int 
 	int len;
 	if (!packet || !buffer || !len) {
 		return -EFAULT;
+	}
+	// if is an error response
+	if (MCU_DEVICE_ERROR_ID == packet->message.error.error_id) {
+		return packet->message.error.error_code;
 	}
 	len = packet->header.length - sizeof(struct mcu_packet_device_control);
 	len = min(*size, len);
