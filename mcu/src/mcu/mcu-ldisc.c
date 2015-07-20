@@ -16,6 +16,7 @@
 
 struct sermcu {
 	struct tty_struct *tty;
+	struct mcu_bus_device *mcu;
 	spinlock_t lock;
 };
 
@@ -42,12 +43,12 @@ static void sermcu_ldisc_receive(struct tty_struct *tty, const unsigned char *cp
 			continue;
 		}
 		if (has_error) {
-			mcu_receive(mcu_tty_bus, &cp[i], 1);
+			mcu_receive(sermcu->mcu, &cp[i], 1);
 		}
 	}
 
 	if (!has_error) {
-		mcu_receive(mcu_tty_bus, cp, count);
+		mcu_receive(sermcu->mcu, cp, count);
 	}
 
 	spin_unlock_irqrestore(&sermcu->lock, flags);
@@ -59,7 +60,7 @@ static void sermcu_ldisc_write_wakeup(struct tty_struct *tty)
 	unsigned long flags;
 
 	spin_lock_irqsave(&sermcu->lock, flags);
-	mcu_write_complete(mcu_tty_bus);
+	mcu_write_complete(sermcu->mcu);
 	spin_unlock_irqrestore(&sermcu->lock, flags);
 }
 
@@ -75,6 +76,7 @@ static int sermcu_ldisc_open(struct tty_struct *tty)
 		return -ENOMEM;
 
 	sermcu->tty = tty;
+	sermcu->mcu = mcu_tty_bus;
 	spin_lock_init(&sermcu->lock);
 	tty->disc_data = sermcu;
 	tty->receive_room = 256;
