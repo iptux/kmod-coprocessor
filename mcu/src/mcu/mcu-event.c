@@ -16,30 +16,33 @@
 static DEFINE_SPINLOCK(mcu_event_lock);	/* protects mcu_event_list */
 static LIST_HEAD(mcu_event_list);
 
-struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type type, int timeout)
+struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id device_id, enum mcu_event_type type, int timeout)
 {
 	struct mcu_event *event = NULL;
+	struct mcu_event *next;
 	unsigned long flags;
 	int ret;
 
 	while (1) {
-		ret = wait_event_interruptible_timeout(bus->wait_queue, test_bit(type, &bus->event_flags), msecs_to_jiffies(timeout));
+		ret = wait_event_interruptible_timeout(bus->wait_queue, !list_empty(&bus->event_list), msecs_to_jiffies(timeout));
 		if (ret <= 0) {
 			// timeout
 			break;
 		}
 		spin_lock_irqsave(&bus->event_lock, flags);
-		// clear bit to avoid infinit loop
-		clear_bit(type, &bus->event_flags);
-		event = bus->event_data;
-		if (event && event->type == type && event->bus == bus) {
-			// found
-			spin_unlock_irqrestore(&bus->event_lock, flags);
+		list_for_each_entry_safe(event, next, &bus->event_list, node) {
+			if (event->type == type && event->bus == bus && mcu_packet_match(event->object, device_id)) {
+				// found
+				list_del(&event->node);
+				break;
+			}
+			event = NULL;
+		}
+		spin_unlock_irqrestore(&bus->event_lock, flags);
+
+		if (event) {
 			break;
 		}
-		mcu_free_event(event);
-		event = NULL;
-		spin_unlock_irqrestore(&bus->event_lock, flags);
 	}
 
 	return event;
@@ -55,8 +58,7 @@ void mcu_notify_event(struct mcu_event *event)
 
 	spin_lock_irqsave(&bus->event_lock, flags);
 	if (waitqueue_active(&bus->wait_queue)) {
-		bus->event_data = event;
-		set_bit(event->type, &bus->event_flags);
+		list_add_tail(&event->node, &bus->event_list);
 		wake_up(&bus->wait_queue);
 	}
 
