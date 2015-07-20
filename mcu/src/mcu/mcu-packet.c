@@ -236,7 +236,7 @@ int mcu_packet_extract_control_info(struct mcu_packet *packet, mcu_device_id *de
 int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int *size)
 {
 	int len;
-	if (!packet || !buffer || !len) {
+	if (!packet || !buffer || !size) {
 		return -EFAULT;
 	}
 	// if is an error response
