@@ -13,6 +13,9 @@
 #include <linux/init.h>
 #include "linux/mcu.h"
 
+// offset of detail field
+#define MCU_PACKET_DETAIL_OFFSET 8
+
 struct mcu_bus_device;
 struct mcu_packet;
 
