@@ -19,7 +19,14 @@ struct mcu_bus_device {
 	int (*late_init)(struct mcu_bus_device *);
 	int (*do_write)(struct mcu_bus_device *, const void *ptr, int len);
 	int nr;
+	// used by mcu-packet
 	void *pkt_data;
+	// used by mcu-event
+	spinlock_t event_lock;
+	wait_queue_head_t wait_queue;
+	unsigned long event_flags;
+	void *event_data;
+
 	struct completion dev_released;
 	struct list_head children;
 };

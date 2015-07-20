@@ -10,14 +10,11 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include "mcu-event.h"
+#include "mcu-bus.h"
 
 
 static DEFINE_SPINLOCK(mcu_event_lock);	/* protects mcu_event_list */
 static LIST_HEAD(mcu_event_list);
-
-static DECLARE_WAIT_QUEUE_HEAD(mcu_wait_queue);
-static unsigned long mcu_event_flags = 0;
-static struct mcu_event *mcu_event_waited = NULL;
 
 struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type type, int timeout)
 {
@@ -26,21 +23,23 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type
 	int ret;
 
 	while (1) {
-		ret = wait_event_interruptible_timeout(mcu_wait_queue, test_bit(type, &mcu_event_flags), msecs_to_jiffies(timeout));
+		ret = wait_event_interruptible_timeout(bus->wait_queue, test_bit(type, &bus->event_flags), msecs_to_jiffies(timeout));
 		if (ret <= 0) {
 			// timeout
 			break;
 		}
-		spin_lock_irqsave(&mcu_event_lock, flags);
+		spin_lock_irqsave(&bus->event_lock, flags);
 		// clear bit to avoid infinit loop
-		clear_bit(type, &mcu_event_flags);
-		if (mcu_event_waited && mcu_event_waited->type == type && mcu_event_waited->bus == bus) {
+		clear_bit(type, &bus->event_flags);
+		event = bus->event_data;
+		if (event && event->type == type && event->bus == bus) {
 			// found
-			event = mcu_event_waited;
+			spin_unlock_irqrestore(&bus->event_lock, flags);
 			break;
 		}
-		mcu_free_event(mcu_event_waited);
-		spin_unlock_irqrestore(&mcu_event_lock, flags);
+		mcu_free_event(event);
+		event = NULL;
+		spin_unlock_irqrestore(&bus->event_lock, flags);
 	}
 
 	return event;
@@ -49,15 +48,19 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, enum mcu_event_type
 void mcu_notify_event(struct mcu_event *event)
 {
 	unsigned long flags;
-	spin_lock_irqsave(&mcu_event_lock, flags);
-
-	if (waitqueue_active(&mcu_wait_queue)) {
-	mcu_event_waited = event;
-	set_bit(event->type, &mcu_event_flags);
-	wake_up(&mcu_wait_queue);
+	struct mcu_bus_device *bus = event->bus;
+	if (unlikely(!bus)) {
+		return;
 	}
 
-	spin_unlock_irqrestore(&mcu_event_lock, flags);
+	spin_lock_irqsave(&bus->event_lock, flags);
+	if (waitqueue_active(&bus->wait_queue)) {
+		bus->event_data = event;
+		set_bit(event->type, &bus->event_flags);
+		wake_up(&bus->wait_queue);
+	}
+
+	spin_unlock_irqrestore(&bus->event_lock, flags);
 }
 
 
