@@ -84,7 +84,6 @@ struct mcu_event *mcu_get_event(void)
 
 void mcu_free_event(struct mcu_event *event)
 {
-	module_put(event->owner);
 	kfree(event);
 }
 
@@ -138,13 +137,6 @@ struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, st
 	event = kmalloc(sizeof(struct mcu_event), GFP_ATOMIC);
 	if (!event) {
 		pr_err("Not enough memory to queue event %d\n", event_type);
-		goto out;
-	}
-
-	if (!try_module_get(owner)) {
-		pr_warning("Can't get module reference, dropping event %d\n", event_type);
-		kfree(event);
-		event = NULL;
 		goto out;
 	}
 
