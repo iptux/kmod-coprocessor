@@ -24,8 +24,7 @@ struct mcu_bus_device {
 	// used by mcu-event
 	spinlock_t event_lock;
 	wait_queue_head_t wait_queue;
-	unsigned long event_flags;
-	void *event_data;
+	struct list_head event_list;
 
 	struct completion dev_released;
 	struct list_head children;
