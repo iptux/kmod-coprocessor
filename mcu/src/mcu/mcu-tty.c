@@ -63,7 +63,7 @@ static void mcu_tty_setup(struct file *filp)
 	termios.c_cflag = CLOCAL | CS8 | CREAD | B9600;
 #else
 	termios.c_cflag &= ~CBAUD;
-	termios.c_cflag |= B9600;
+	termios.c_cflag |= B57600;
 	termios.c_cflag |= (CLOCAL | CREAD);
 	termios.c_cflag |= PARENB;
 	termios.c_cflag &= ~(PARODD | CSTOPB | CSIZE);
