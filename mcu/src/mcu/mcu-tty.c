@@ -91,7 +91,7 @@ static int mcu_tty_late_init(struct mcu_bus_device *device)
 		// must be opened in a kthread
 		data->filp = filp_open(data->tty_name, O_RDWR | O_NOCTTY, 0);
 		if (IS_ERR(data->filp)) {
-			DBG("Failed to open port %s: ret=%d", data->tty_name, (int)PTR_ERR(data->filp));
+			dev_err(data->dev, "Failed to open port %s: ret=%d", data->tty_name, (int)PTR_ERR(data->filp));
 			return PTR_ERR(data->filp);
 		}
 		mcu_tty_setup(data->filp);
