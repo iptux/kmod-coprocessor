@@ -139,14 +139,14 @@ static int mcu_tty_probe(struct platform_device *op)
 	data->bus.dev.parent = &op->dev;
 	data->bus.dev.of_node = of_node_get(op->dev.of_node);
 
+	// hack for ldisc
+	mcu_tty_bus = &data->bus;
+
 	ret = mcu_add_bus_device(&data->bus);
 	if (ret < 0) {
 		dev_err(data->dev, "failed to add mcu bus: ret=%d\n", ret);
 		goto fail_add;
 	}
-
-	// hack for ldisc
-	mcu_tty_bus = &data->bus;
 
 	return ret;
 
