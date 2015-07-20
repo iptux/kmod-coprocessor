@@ -29,6 +29,9 @@ static int mcu_tty_write(struct mcu_bus_device *device, const void *buffer, int 
 {
 	struct mcu_tty_private *data = container_of(device, struct mcu_tty_private, bus);
 	loff_t offset = 0;
+	if (unlikely(!data->filp)) {
+		return -EAGAIN;
+	}
 	return __kernel_write(data->filp, buffer, count, &offset);
 }
 
