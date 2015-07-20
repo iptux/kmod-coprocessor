@@ -163,6 +163,9 @@ static int mcu_tty_remove(struct platform_device *op)
 {
 	struct mcu_tty_private *data = platform_get_drvdata(op);
 	mcu_remove_bus_device(&data->bus);
+	if (data->filp) {
+		filp_close(data->filp, NULL);
+	}
 	kfree(data);
 	return 0;
 }
