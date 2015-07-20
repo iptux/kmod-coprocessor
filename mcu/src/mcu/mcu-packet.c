@@ -157,7 +157,13 @@ void mcu_packet_free(struct mcu_packet *packet)
 static struct mcu_packet *__mcu_packet_send_ping(struct mcu_bus_device *bus, unsigned char identity)
 {
 	int ret;
-	struct mcu_packet *packet = kzalloc(sizeof(struct mcu_packet), GFP_KERNEL);
+	struct mcu_packet *packet;
+
+	if (unlikely(!bus)) {
+		return NULL;
+	}
+
+	packet = kzalloc(sizeof(struct mcu_packet), GFP_KERNEL);
 	if (unlikely(!packet)) {
 		return NULL;
 	}
@@ -188,8 +194,13 @@ static struct mcu_packet *mcu_packet_send_control(struct mcu_bus_device *bus, un
 {
 	int ret;
 	unsigned char message_length = len + sizeof(struct mcu_packet_device_control);
+	struct mcu_packet *packet;
 
-	struct mcu_packet *packet = kzalloc(sizeof(struct mcu_packet) + message_length, GFP_KERNEL);
+	if (unlikely(!bus)) {
+		return NULL;
+	}
+
+	packet = kzalloc(sizeof(struct mcu_packet) + message_length, GFP_KERNEL);
 	if (unlikely(!packet)) {
 		return NULL;
 	}
