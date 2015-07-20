@@ -222,7 +222,7 @@ struct lq12864_data {
 static s32 lq12864_ioctl_fill(struct mcu_device *device, u8 what)
 {
 	unsigned char buffer[] = {what};
-	return mcu_device_command(device, 'F', buffer, sizeof(buffer));
+	return mcu_device_command(device, 'F', buffer, sizeof(buffer)) >= 0;
 }
 
 static s32 lq12864_ioctl_clear(struct mcu_device *device)
@@ -279,7 +279,7 @@ static s32 lq12864_ioctl_draw(struct mcu_device *device, struct lq12864_ioctl_da
 
 	kfree(draw);
 
-	return ret;
+	return ret >= 0;
 }
 
 static s32 lq12864_ioctl_en(struct mcu_device *device, struct lq12864_ioctl_data *data)
