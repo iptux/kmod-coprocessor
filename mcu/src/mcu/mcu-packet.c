@@ -221,6 +221,18 @@ struct mcu_packet *mcu_packet_send_control_response(struct mcu_bus_device *bus, 
 	return mcu_packet_send_control(bus, MCU_PACKET_CONTROL_RESPONSE, device_id, control_code, cp, len);
 }
 
+int mcu_packet_extract_control_info(struct mcu_packet *packet, mcu_device_id *device_id, mcu_control_code *control_code, int *detail_len)
+{
+	if (unlikely(!packet))
+		return -EINVAL;
+
+	if (device_id) *device_id = packet->message.control.device_id;
+	if (control_code) *control_code = packet->message.control.control_code;
+	if (detail_len) *detail_len = packet->header.length - sizeof(struct mcu_packet_device_control);
+
+	return 0;
+}
+
 int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int *size)
 {
 	int len;
