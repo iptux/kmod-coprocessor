@@ -62,12 +62,43 @@ void mcu_battery_set_capacity(struct mcu_battery_private *data, unsigned char ca
 	}
 }
 
+static int mcu_battery_command(struct mcu_battery_private *data, mcu_control_code cmd, unsigned char *value)
+{
+	struct mcu_device *device = data->device;
+	unsigned char buffer[1] = {0};
+	int ret;
+
+	ret = mcu_device_command(data->device, cmd, buffer, sizeof(buffer));
+	if (ret < 0) {
+		dev_warn(&device->dev, "failed to send commad: cmd=%d\n", cmd);
+	}
+	else if (NULL != value) {
+		*value = buffer[0];
+	}
+
+	return ret;
+}
+
+static void mcu_battery_update(struct mcu_battery_private *data)
+{
+	unsigned char value = 0;
+	if (mcu_battery_command(data, 'C', &value) >= 0) {
+		mcu_battery_set_capacity(data, value);
+	}
+	if (mcu_battery_command(data, 'S', &value) >= 0) {
+		mcu_battery_set_status(data, value);
+	}
+}
 
 static int mcu_battery_get_property(struct power_supply *psy,
 		enum power_supply_property psp,
 		union power_supply_propval *val)
 {
 	struct mcu_battery_private *data = container_of(psy, struct mcu_battery_private, battery);
+
+	if (!data->capacity || !data->present) {
+		mcu_battery_update(data);
+	}
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
