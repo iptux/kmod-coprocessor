@@ -25,7 +25,7 @@ static int mcu_gpio_command(struct gpio_chip *chip, unsigned char cmd, unsigned 
 	int ret;
 
 	ret = mcu_device_command(data->device, cmd, buffer, sizeof(buffer));
-	if (ret) {
+	if (ret < 0) {
 		dev_warn(&device->dev, "failed to send commad: cmd=%c, gpio=%d\n", cmd, offset);
 	}
 	else if (NULL != value) {
@@ -40,7 +40,7 @@ static int mcu_gpio_get(struct gpio_chip *chip, unsigned offset)
 	int ret, value;
 
 	ret = mcu_gpio_command(chip, 'r', offset, &value);
-	return 0 == ret ? value : 0;
+	return ret >= 0 ? value : 0;
 }
 
 static void mcu_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
@@ -53,12 +53,12 @@ static int mcu_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
 	int ret, value;
 
 	ret = mcu_gpio_command(chip, 'r', offset, &value);
-	return 0 == ret ? value : GPIOF_DIR_OUT;
+	return ret >= 0 ? value : GPIOF_DIR_OUT;
 }
 
 static int mcu_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 {
-	return mcu_gpio_command(chip, 'i', offset, NULL);
+	return mcu_gpio_command(chip, 'i', offset, NULL) >= 0;
 }
 
 static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, int value)
@@ -67,7 +67,7 @@ static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, in
 
 	ret = mcu_gpio_command(chip, 'o', offset, NULL);
 
-	return 0 == ret ? ret : mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
+	return ret >= 0 ? ret : mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
 }
 
 static void mcu_gpio_report(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len)
