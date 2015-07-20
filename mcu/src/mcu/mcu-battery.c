@@ -175,7 +175,6 @@ static int mcu_battery_probe(struct mcu_device *device, const struct mcu_device_
 			data->battery.get_property	= mcu_battery_get_property;
 			data->battery.properties	= mcu_battery_props;
 			data->battery.num_properties	= ARRAY_SIZE(mcu_battery_props);
-			data->status	= POWER_SUPPLY_STATUS_DISCHARGING;
 
 			ret = power_supply_register(&device->dev, &data->battery);
 			if (ret) {
