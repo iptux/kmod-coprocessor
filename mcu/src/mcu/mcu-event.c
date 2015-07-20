@@ -119,21 +119,6 @@ struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, st
 
 	spin_lock_irqsave(&mcu_event_lock, flags);
 
-	/*
-	 * Scan event list for the other events for the same serio port,
-	 * starting with the most recent one. If event is the same we
-	 * do not need add new one. If event is of different type we
-	 * need to add this event and should not look further because
-	 * we need to preseve sequence of distinct events.
-	 */
-	list_for_each_entry_reverse(event, &mcu_event_list, node) {
-		if (event->object == object) {
-			if (event->type == event_type)
-				goto out;
-			break;
-		}
-	}
-
 	event = kmalloc(sizeof(struct mcu_event), GFP_ATOMIC);
 	if (!event) {
 		pr_err("Not enough memory to queue event %d\n", event_type);
