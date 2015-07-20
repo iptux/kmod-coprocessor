@@ -241,7 +241,7 @@ int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int 
 	}
 	// if is an error response
 	if (MCU_DEVICE_ERROR_ID == packet->message.error.error_id) {
-		return packet->message.error.error_code;
+		return -packet->message.error.error_code;
 	}
 	len = packet->header.length - sizeof(struct mcu_packet_device_control);
 	len = min(*size, len);
