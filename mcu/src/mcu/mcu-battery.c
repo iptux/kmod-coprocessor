@@ -79,14 +79,29 @@ static int mcu_battery_command(struct mcu_battery_private *data, mcu_control_cod
 	return ret;
 }
 
-static void mcu_battery_update(struct mcu_battery_private *data)
+static void mcu_battery_update_status_on_demand(struct mcu_battery_private *data)
 {
 	unsigned char value = 0;
-	if (mcu_battery_command(data, 'C', &value) >= 0) {
-		mcu_battery_set_capacity(data, value);
+	if (data->status) {
+		return;
 	}
-	if (mcu_battery_command(data, 'S', &value) >= 0) {
+	if (mcu_battery_command(data, 'S', &value) == 1) {
 		mcu_battery_set_status(data, value);
+	}
+}
+
+static void mcu_battery_update_capacity_on_demand(struct mcu_battery_private *data)
+{
+	unsigned char value = 0;
+
+	// before update capacity, update status first
+	mcu_battery_update_status_on_demand(data);
+
+	if (data->capacity) {
+		return;
+	}
+	if (mcu_battery_command(data, 'C', &value) == 0) {
+		mcu_battery_set_capacity(data, value);
 	}
 }
 
@@ -96,27 +111,28 @@ static int mcu_battery_get_property(struct power_supply *psy,
 {
 	struct mcu_battery_private *data = container_of(psy, struct mcu_battery_private, battery);
 
-	if (!data->capacity || !data->present) {
-		mcu_battery_update(data);
-	}
-
 	switch (psp) {
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
 		break;
 	case POWER_SUPPLY_PROP_STATUS:
+		mcu_battery_update_status_on_demand(data);
 		val->intval = data->status;
 		break;
 	case POWER_SUPPLY_PROP_HEALTH:
+		mcu_battery_update_capacity_on_demand(data);
 		val->intval = data->health;
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
+		mcu_battery_update_capacity_on_demand(data);
 		val->intval = data->capacity;
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
+		mcu_battery_update_capacity_on_demand(data);
 		val->intval = data->capacity_level;
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
+		mcu_battery_update_status_on_demand(data);
 		val->intval = data->present;
 		break;
 	default:
