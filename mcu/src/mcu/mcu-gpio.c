@@ -70,12 +70,6 @@ static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, in
 	return ret >= 0 ? ret : mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
 }
 
-static void mcu_gpio_report(struct mcu_device *device, mcu_control_code cmd, unsigned char *buffer, int len)
-{
-	struct mcu_gpio_private *data = mcu_get_drvdata(device);
-
-}
-
 static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id *id)
 {
 	struct device_node *np = device->dev.of_node;
@@ -147,6 +141,5 @@ struct mcu_driver __mcu_gpio = {
 	.probe	= mcu_gpio_probe,
 	.remove	= mcu_gpio_remove,
 	.id_table	= mcu_gpio_id,
-	.report	= mcu_gpio_report,
 };
 
