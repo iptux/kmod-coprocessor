@@ -94,6 +94,7 @@ static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id 
 		return -ENOMEM;
 	}
 
+	data->device = device;
 	data->chip.dev = &device->dev;
 	data->chip.label = dev_name(&device->dev);
 	data->chip.of_node = np;
