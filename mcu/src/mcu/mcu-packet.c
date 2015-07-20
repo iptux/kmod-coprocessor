@@ -349,10 +349,13 @@ void mcu_packet_buffer_detect(struct mcu_bus_device *bus)
 	}
 
 	spin_lock(&mcu_packet_data->buffer_lock);
-	{
+	while (1) {
 		struct mcu_packet *packet = __mcu_packet_detect(mcu_packet_data);
 		if (packet) {
 			__mcu_packet_report(bus, packet);
+		}
+		else {
+			break;
 		}
 	}
 	spin_unlock(&mcu_packet_data->buffer_lock);
