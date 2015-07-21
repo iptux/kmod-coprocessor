@@ -265,7 +265,7 @@ int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int 
 int mcu_packet_match(const struct mcu_packet *packet, mcu_device_id device_id)
 {
 	mcu_device_id id;
-	if (!packet) return 0;
+	if (!packet) return 1;
 	id = packet->message.control.device_id;
 	return (MCU_DEVICE_ERROR_ID == id) || (device_id == id);
 }
