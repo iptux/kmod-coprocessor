@@ -527,7 +527,7 @@ static int mcu_oled_probe(struct mcu_device *device, const struct mcu_device_id 
 				state->line[y].y = y;
 				state->line[y].width = LQ12864_WIDTH;
 				state->line[y].width2 = LQ12864_WIDTH;
-				state->line[y].inverse = 0;
+				state->line[y].inverse = 1;
 				state->line[y].height = 1;
 			}
 
