@@ -34,17 +34,16 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id devic
 			if (event->type == type && event->bus == bus && mcu_packet_match(event->object, device_id)) {
 				// found
 				list_del(&event->node);
-				break;
+				goto found;
 			}
-			event = NULL;
 		}
 		spin_unlock_irqrestore(&bus->event_lock, flags);
-
-		if (event) {
-			break;
-		}
 	}
 
+	return NULL;
+
+found:
+	spin_unlock_irqrestore(&bus->event_lock, flags);
 	return event;
 }
 
