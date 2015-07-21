@@ -41,7 +41,7 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id devic
 		spin_unlock_irqrestore(&bus->event_lock, flags);
 
 		// event list not empty, wait more event
-		schedule();
+		io_schedule();
 	}
 
 	return NULL;
