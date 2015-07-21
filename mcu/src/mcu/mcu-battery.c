@@ -58,7 +58,7 @@ void mcu_battery_set_capacity(struct mcu_battery_private *data, unsigned char ca
 	}
 	else {
 		data->capacity_level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-		data->health = POWER_SUPPLY_HEALTH_GOOD;
+		data->health = POWER_SUPPLY_HEALTH_DEAD;
 	}
 }
 
