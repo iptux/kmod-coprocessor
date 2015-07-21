@@ -52,7 +52,7 @@ static int mcu_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
 {
 	int ret, value;
 
-	ret = mcu_gpio_command(chip, 'r', offset, &value);
+	ret = mcu_gpio_command(chip, 'e', offset, &value);
 	return ret >= 0 ? value : GPIOF_DIR_OUT;
 }
 
