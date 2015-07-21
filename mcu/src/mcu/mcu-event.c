@@ -25,7 +25,7 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id devic
 	int loop = 10;
 
 	while (loop--) {
-		ret = wait_event_interruptible_timeout(bus->wait_queue, !list_empty(&bus->event_list), msecs_to_jiffies(timeout));
+		ret = wait_event_interruptible_timeout(bus->wait_queue, !list_empty_careful(&bus->event_list), msecs_to_jiffies(timeout));
 		if (ret <= 0) {
 			// timeout
 			break;
