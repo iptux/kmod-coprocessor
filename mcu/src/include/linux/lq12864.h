@@ -44,6 +44,7 @@ struct lq12864_ioctl_data {
 #define LQ12864_IOCTL_DRAW  _IOW(LQ12864_MAGIC, 4, struct lq12864_ioctl_data *)
 #define LQ12864_IOCTL_EN    _IOW(LQ12864_MAGIC, 5, struct lq12864_ioctl_data *)
 #define LQ12864_IOCTL_EN2   _IOW(LQ12864_MAGIC, 6, struct lq12864_ioctl_data *)
+#define LQ12864_IOCTL_SYNC  _IOW(LQ12864_MAGIC, 7, struct lq12864_ioctl_data *)
 
 
 #endif /* _LINUX_LQ12864_H */

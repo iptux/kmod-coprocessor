@@ -213,7 +213,19 @@ static u8 F8X16[] =
 	0x00,0x06,0x01,0x01,0x02,0x02,0x04,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	//~94
 };
 
+struct mcu_protocol_draw {
+	u8 x;
+	u8 width;
+	u8 width2;
+	u8 y:3;
+	// inverse bit is alse used as a dirty flag
+	u8 inverse:1;
+	u8 height:4;
+	u8 data[LQ12864_WIDTH];
+};
+
 struct lq12864_data {
+	struct mcu_protocol_draw line[LQ12864_HEIGHT];
 	struct mcu_device *device;
 	struct mutex lock;
 } *lq12864 = NULL;
@@ -222,6 +234,11 @@ struct lq12864_data {
 static s32 lq12864_ioctl_fill(struct mcu_device *device, u8 what)
 {
 	unsigned char buffer[] = {what};
+	u32 y;
+	for (y = 0; y < LQ12864_HEIGHT; y++) {
+		lq12864->line[y].inverse = 0;
+		memset(lq12864->line[y].data, what, sizeof(lq12864->line[y].data));
+	}
 	return mcu_device_command(device, 'F', buffer, sizeof(buffer)) < 0;
 }
 
@@ -230,20 +247,28 @@ static s32 lq12864_ioctl_clear(struct mcu_device *device)
 	return lq12864_ioctl_fill(device, 0);
 }
 
-struct mcu_protocol_draw {
-	u8 x;
-	u8 width;
-	u8 width2;
-	u8 y:3;
-	u8 inverse:1;
-	u8 height:4;
-	u8 data[0];
-};
+static s32 lq12864_ioctl_sync(struct mcu_device *device)
+{
+	u32 y;
+	u32 ret = 0;
+
+	for (y = 0; y < LQ12864_HEIGHT; y++)
+	{
+		if (lq12864->line[y].inverse) {
+			lq12864->line[y].inverse = 0;
+			ret = mcu_device_command(device, 'D', (unsigned char *)&lq12864->line[y], sizeof(struct mcu_protocol_draw));
+			if (ret < 0) {
+				pr_err("%s: failed to sync line %d, ret=%d", __func__, y, ret);
+			}
+		}
+	}
+
+	return ret;
+}
 
 static s32 lq12864_ioctl_draw(struct mcu_device *device, struct lq12864_ioctl_data *data)
 {
-	u32 ret = 0;
-	struct mcu_protocol_draw *draw;
+	u32 x, y;
 
 	/* check param */
 	if (data->x >= LQ12864_WIDTH
@@ -262,24 +287,22 @@ static s32 lq12864_ioctl_draw(struct mcu_device *device, struct lq12864_ioctl_da
 		return -EINVAL;
 	}
 
-	draw = kzalloc(sizeof(struct mcu_protocol_draw) + data->size, GFP_KERNEL);
-	if (NULL == draw) {
-		return -ENOMEM;
+	for (y = 0; y < data->height; y++)
+	{
+		if (data->inverse) {
+			for (x = 0; x < data->width2; x++) {
+				lq12864->line[data->y + y].data[data->x + x] = ~data->data[data->width * y + x];
+			}
+		}
+		else {
+			memcpy(&lq12864->line[data->y + y].data[data->x], &data->data[data->width * y], data->width2);
+		}
+
+		// mark as dirty
+		lq12864->line[data->y + y].inverse = 1;
 	}
 
-	draw->x = data->x;
-	draw->width = data->width;
-	draw->width2 = data->width2;
-	draw->y = data->y;
-	draw->inverse = data->inverse;
-	draw->height = data->height;
-	memcpy(&draw->data, data->data, data->size);
-
-	ret = mcu_device_command(device, 'D', (unsigned char *)draw, sizeof(struct mcu_protocol_draw) + data->size);
-
-	kfree(draw);
-
-	return ret < 0;
+	return 0;
 }
 
 static s32 lq12864_ioctl_en(struct mcu_device *device, struct lq12864_ioctl_data *data)
@@ -422,6 +445,9 @@ static long lq12864_ioctl(struct mcu_device *device, unsigned int cmd, struct lq
 	case LQ12864_IOCTL_EN2:
 		ret = lq12864_ioctl_en2(device, &param);
 		break;
+	case LQ12864_IOCTL_SYNC:
+		ret = lq12864_ioctl_sync(device);
+		break;
 	default:
 		ret = -EINVAL;
 		break;
@@ -474,6 +500,7 @@ static int mcu_oled_probe(struct mcu_device *device, const struct mcu_device_id 
 	struct device *dev = &device->dev;
 	struct lq12864_data *state;
 	int ret = -ENODEV;
+	int y;
 
 	switch (id->driver_data) {
 	case 0:
@@ -493,6 +520,15 @@ static int mcu_oled_probe(struct mcu_device *device, const struct mcu_device_id 
 			if (ret) {
 				pr_err("mcu-oled: lq12864_device register failed\n");
 				goto exit_misc_device_reg_failed;
+			}
+
+			for (y = 0; y < LQ12864_HEIGHT; y++) {
+				state->line[y].x = 0;
+				state->line[y].y = y;
+				state->line[y].width = LQ12864_WIDTH;
+				state->line[y].width2 = LQ12864_WIDTH;
+				state->line[y].inverse = 0;
+				state->line[y].height = 1;
 			}
 
 			dev_info(dev, "lq12864 device created\n");
