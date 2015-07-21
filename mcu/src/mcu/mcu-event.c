@@ -112,7 +112,7 @@ void mcu_remove_duplicate_events(void *object, enum mcu_event_type type)
 	spin_unlock_irqrestore(&mcu_event_lock, flags);
 }
 
-struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, struct module *owner, enum mcu_event_type event_type)
+struct mcu_event *mcu_queue_event(void *object, struct mcu_bus_device *bus, enum mcu_event_type event_type)
 {
 	unsigned long flags;
 	struct mcu_event *event = NULL;
@@ -128,7 +128,6 @@ struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, st
 	event->type = event_type;
 	event->object = object;
 	event->bus = bus;
-	event->owner = owner;
 
 	list_add_tail(&event->node, &mcu_event_list);
 	queue_work(system_long_wq, &mcu_event_work);

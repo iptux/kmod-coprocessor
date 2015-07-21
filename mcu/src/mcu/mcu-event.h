@@ -30,7 +30,6 @@ struct mcu_event {
 	enum mcu_event_type type;
 	void *object;
 	struct mcu_bus_device *bus;
-	struct module *owner;
 	struct list_head node;
 };
 
@@ -39,12 +38,10 @@ extern struct work_struct mcu_event_work;
 struct mcu_event *mcu_get_event(void);
 void mcu_free_event(struct mcu_event *event);
 void mcu_remove_duplicate_events(void *object, enum mcu_event_type type);
-struct mcu_event *__mcu_queue_event(void *object, struct mcu_bus_device *bus, struct module *owner, enum mcu_event_type event_type);
+struct mcu_event *mcu_queue_event(void *object, struct mcu_bus_device *bus, enum mcu_event_type event_type);
 void mcu_remove_pending_events(void *object);
 struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id device_id, enum mcu_event_type type, int timeout);
 void mcu_notify_event(struct mcu_event *event);
-
-#define mcu_queue_event(object, bus, type) __mcu_queue_event((object), (bus), THIS_MODULE, (type))
 
 #endif	// __MCU_EVENT_H_
 
