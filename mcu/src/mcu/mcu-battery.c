@@ -100,7 +100,7 @@ static void mcu_battery_update_capacity_on_demand(struct mcu_battery_private *da
 	if (data->capacity) {
 		return;
 	}
-	if (mcu_battery_command(data, 'C', &value) == 0) {
+	if (mcu_battery_command(data, 'C', &value) == 1) {
 		mcu_battery_set_capacity(data, value);
 	}
 }
