@@ -58,7 +58,8 @@ static int mcu_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
 
 static int mcu_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 {
-	return mcu_gpio_command(chip, 'i', offset, NULL) >= 0;
+	int ret = mcu_gpio_command(chip, 'i', offset, NULL);
+	return ret >= 0 ? 0 : ret;
 }
 
 static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, int value)
@@ -66,8 +67,11 @@ static int mcu_gpio_direction_output(struct gpio_chip *chip, unsigned offset, in
 	int ret;
 
 	ret = mcu_gpio_command(chip, 'o', offset, NULL);
+	if (ret >= 0) {
+		ret = mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
+	}
 
-	return ret >= 0 ? ret : mcu_gpio_command(chip, value ? 'h' : 'l', offset, NULL);
+	return ret >= 0 ? 0 : ret;
 }
 
 static int mcu_gpio_probe(struct mcu_device *device, const struct mcu_device_id *id)
