@@ -137,20 +137,3 @@ out:
 	return event;
 }
 
-void mcu_remove_pending_events(void *object)
-{
-	struct mcu_event *event, *next;
-	unsigned long flags;
-
-	spin_lock_irqsave(&mcu_event_lock, flags);
-
-	list_for_each_entry_safe(event, next, &mcu_event_list, node) {
-		if (event->object == object) {
-			list_del_init(&event->node);
-			mcu_free_event(event);
-		}
-	}
-
-	spin_unlock_irqrestore(&mcu_event_lock, flags);
-}
-
