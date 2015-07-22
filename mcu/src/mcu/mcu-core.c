@@ -43,7 +43,7 @@ int mcu_device_command(struct mcu_device *device, mcu_control_code cmd, unsigned
 	}
 
 	// wait for reply
-	event = mcu_wait_event(device->bus, device->device_id, MCU_CONTROL_RESPONSE_DETECTED, 3000);
+	event = mcu_wait_event(device->bus, packet, MCU_CONTROL_RESPONSE_DETECTED, 3000);
 	if (unlikely(!event)) {
 		ret = -ETIME;
 		goto exit_free_packet;
@@ -79,7 +79,7 @@ int mcu_check_ping(struct mcu_device *device)
 	}
 
 	// wait for reply
-	event = mcu_wait_event(device->bus, device->device_id, MCU_PONG_DETECTED, 3000);
+	event = mcu_wait_event(device->bus, packet, MCU_PONG_DETECTED, 3000);
 	if (unlikely(!event)) {
 		ret = -ETIME;
 		goto exit_free_packet;
