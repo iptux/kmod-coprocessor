@@ -180,7 +180,7 @@ struct mcu_device *mcu_new_device(struct mcu_bus_device *bus, struct mcu_board_i
 	device->dev.type = &mcu_dev_type;
 	device->dev.of_node = info->of_node;
 
-	dev_set_name(&device->dev, "%d-%x", bus->nr, info->device_id);
+	dev_set_name(&device->dev, "mcu%d-%x", bus->nr, info->device_id);
 	ret = device_register(&device->dev);
 	if (ret)
 		goto reg_err;
