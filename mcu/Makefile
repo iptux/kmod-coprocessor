@@ -16,10 +16,6 @@ define KernelPackage/mcu
   AUTOLOAD:=$(call AutoLoad,50,mcu)
 endef
 
-define KernelPackage/mcu/config
- source "$(SOURCE)/Config.in"
-endef
-
 EXTRA_KCONFIG:= \
 	MCU_TTY \
 	MCU_LDISC \
@@ -32,8 +28,8 @@ MAKE_OPTS:= \
 	ARCH="$(LINUX_KARCH)" \
 	CROSS_COMPILE="$(TARGET_CROSS)" \
 	SUBDIRS="$(PKG_BUILD_DIR)" \
-	EXTRA_CFLAGS="-I$(PKG_BUILD_DIR)/include $(foreach c, $(EXTRA_KCONFIG),$(if $(CONFIG_$c),-DCONFIG_$(c)=y))" \
-	$(foreach c, $(EXTRA_KCONFIG),$(if $(CONFIG_$c),CONFIG_$(c)=y)) \
+	EXTRA_CFLAGS="-I$(PKG_BUILD_DIR)/include $(foreach c, $(EXTRA_KCONFIG),-DCONFIG_$(c)=y)" \
+	$(foreach c, $(EXTRA_KCONFIG),CONFIG_$(c)=y) \
 	CONFIG_MCU=m
 
 define Build/Prepare
