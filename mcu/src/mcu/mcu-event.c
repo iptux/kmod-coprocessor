@@ -34,13 +34,12 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, const struct mcu_pa
 	struct mcu_event *event = NULL;
 	unsigned long flags;
 	int ret;
-	int loop = 10;
 
-	while (loop--) {
+	{
 		ret = wait_event_interruptible_timeout(bus->wait_queue, mcu_event_find_response(bus, packet, type, &event), msecs_to_jiffies(timeout));
 		if (ret <= 0) {
 			// timeout
-			break;
+			return NULL;
 		}
 		spin_lock_irqsave(&bus->event_lock, flags);
 		if (event) {
@@ -48,9 +47,6 @@ struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, const struct mcu_pa
 			goto found;
 		}
 		spin_unlock_irqrestore(&bus->event_lock, flags);
-
-		// event list not empty, wait more event
-		io_schedule();
 	}
 
 	return NULL;
