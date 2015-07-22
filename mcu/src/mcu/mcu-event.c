@@ -16,27 +16,36 @@
 static DEFINE_SPINLOCK(mcu_event_lock);	/* protects mcu_event_list */
 static LIST_HEAD(mcu_event_list);
 
-struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id device_id, enum mcu_event_type type, int timeout)
+static struct mcu_event *mcu_event_find_response(struct mcu_bus_device *bus, const struct mcu_packet *req, enum mcu_event_type type, struct mcu_event **eventp)
+{
+	struct mcu_event *event, *next;
+	list_for_each_entry_safe(event, next, &bus->event_list, node) {
+		if (event->type == type && event->bus == bus && mcu_packet_response_to(req, event->object)) {
+			*eventp = event;
+			return event;
+		}
+	}
+
+	return NULL;
+}
+
+struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, const struct mcu_packet *packet, enum mcu_event_type type, int timeout)
 {
 	struct mcu_event *event = NULL;
-	struct mcu_event *next;
 	unsigned long flags;
 	int ret;
 	int loop = 10;
 
 	while (loop--) {
-		ret = wait_event_interruptible_timeout(bus->wait_queue, !list_empty_careful(&bus->event_list), msecs_to_jiffies(timeout));
+		ret = wait_event_interruptible_timeout(bus->wait_queue, mcu_event_find_response(bus, packet, type, &event), msecs_to_jiffies(timeout));
 		if (ret <= 0) {
 			// timeout
 			break;
 		}
 		spin_lock_irqsave(&bus->event_lock, flags);
-		list_for_each_entry_safe(event, next, &bus->event_list, node) {
-			if (event->type == type && event->bus == bus && mcu_packet_match(event->object, device_id)) {
-				// found
-				list_del(&event->node);
-				goto found;
-			}
+		if (event) {
+			list_del(&event->node);
+			goto found;
 		}
 		spin_unlock_irqrestore(&bus->event_lock, flags);
 

@@ -39,7 +39,7 @@ struct mcu_event *mcu_get_event(void);
 void mcu_free_event(struct mcu_event *event);
 void mcu_remove_duplicate_events(void *object, enum mcu_event_type type);
 struct mcu_event *mcu_queue_event(void *object, struct mcu_bus_device *bus, enum mcu_event_type event_type);
-struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, mcu_device_id device_id, enum mcu_event_type type, int timeout);
+struct mcu_event *mcu_wait_event(struct mcu_bus_device *bus, const struct mcu_packet *packet, enum mcu_event_type type, int timeout);
 void mcu_notify_event(struct mcu_event *event);
 
 #endif	// __MCU_EVENT_H_
