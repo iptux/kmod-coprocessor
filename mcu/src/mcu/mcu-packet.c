@@ -262,12 +262,17 @@ int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int 
 	return len;
 }
 
-int mcu_packet_match(const struct mcu_packet *packet, mcu_device_id device_id)
+int mcu_packet_response_to(const struct mcu_packet *req, const struct mcu_packet *resp)
 {
-	mcu_device_id id;
-	if (!packet) return 1;
-	id = packet->message.control.device_id;
-	return (MCU_DEVICE_ERROR_ID == id) || (device_id == id);
+	mcu_device_id req_id, resp_id;
+	mcu_control_code req_cmd;
+	if (!req || !resp) return 0;
+	resp_id = resp->message.control.device_id;
+	if (MCU_DEVICE_ERROR_ID == resp_id) return 1;
+	// request packet content is xored
+	req_id = req->message.control.device_id ^ MCU_PACKET_XOR;
+	req_cmd = req->message.control.control_code ^ MCU_PACKET_XOR;
+	return (req_id == resp_id) && (req_cmd == resp->message.control.control_code);
 }
 
 
