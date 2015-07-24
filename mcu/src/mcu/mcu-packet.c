@@ -264,9 +264,15 @@ int mcu_packet_copy_control_detail(struct mcu_packet *packet, void *buffer, int 
 
 int mcu_packet_response_to(const struct mcu_packet *req, const struct mcu_packet *resp)
 {
+	unsigned char req_type, resp_type;
 	mcu_device_id req_id, resp_id;
 	mcu_control_code req_cmd;
 	if (!req || !resp) return 0;
+	req_type = req->header.identity ^ MCU_PACKET_XOR;
+	resp_type = resp->header.identity;
+	// for ping and pong, no further check
+	if (MCU_PACKET_PING == req_type && MCU_PACKET_PONG == resp_type) return 1;
+	if (MCU_PACKET_CONTROL_REQUEST != req_type || MCU_PACKET_CONTROL_RESPONSE != MCU_PACKET_CONTROL_RESPONSE) return 0;
 	resp_id = resp->message.control.device_id;
 	if (MCU_DEVICE_ERROR_ID == resp_id) return 1;
 	// request packet content is xored
