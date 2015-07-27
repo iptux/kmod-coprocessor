@@ -117,11 +117,6 @@ struct device_type mcu_dev_type = {
 	.release	= mcu_dev_release,
 };
 
-static struct mcu_device *mcu_verify_device(struct device *dev)
-{
-	return (dev->type == &mcu_dev_type) ? to_mcu_device(dev) : NULL;
-}
-
 static struct mcu_device *mcu_find_device(struct mcu_bus_device *bus, mcu_device_id id)
 {
 	struct mcu_device *device;
@@ -214,11 +209,6 @@ static void mcu_bus_dev_release(struct device *dev)
 struct device_type mcu_bus_dev_type = {
 	.release	= mcu_bus_dev_release,
 };
-
-static struct mcu_bus_device *mcu_verify_bus(struct device *dev)
-{
-	return (dev->type == &mcu_bus_dev_type) ? to_mcu_bus_device(dev) : NULL;
-}
 
 #if IS_ENABLED(CONFIG_OF)
 static void of_mcu_register_devices(struct mcu_bus_device *bus)
